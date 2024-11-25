@@ -5,7 +5,7 @@
 <section class="hero">
     <div class="hero-content">
         <h1>Welcome to FakeShein!</h1>
-        <p>Your one-stop shop for trendy sneakers and apparel.</p>
+        <p>Your one-stop shop for clothes and sneakers.</p>
     </div>
 </section>
 

@@ -49,7 +49,7 @@
                 <input type="text" class="search-bar" placeholder="Search..." />
                 <button class="search-button">Search</button>
             </div>
-            <a href="/profile" class="nav-right-link">Profile</a>
+            <a href="/login" class="nav-right-link">Profile</a>
             <a href="/favourites" class="nav-right-link">Favourites</a>
             <a href="/cart" class="nav-right-link">My Cart</a>
         </div>
@@ -73,32 +73,28 @@
     .header {
         background-color: black;
         color: white;
-        padding: 1.5rem 0;
+        padding: 0.8rem 1rem;
     }
 
     .navbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 1rem;
+        flex-wrap: wrap; /* Ensures content wraps on small screens */
+        padding: 0 0.5rem;
+    }
+
+    .nav-left, .nav-right {
+        display: flex;
+        align-items: center;
     }
 
     .nav-left {
-        display: flex;
-        align-items: center;
         gap: 2rem;
     }
 
     .nav-right {
-        display: flex;
-        align-items: center;
         gap: 1rem;
-    }
-
-    .search-container {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
     }
 
     .logo {
@@ -111,21 +107,14 @@
     .nav-links {
         list-style: none;
         display: flex;
-        gap: 1.5rem;
+        flex-wrap: wrap; /* Wrap navigation links on small screens */
+        gap: 1rem;
         margin: 0;
         padding: 0;
     }
 
     .nav-links li {
         position: relative; /* Needed for dropdown positioning */
-    }
-
-    .dropdown-toggle {
-        text-decoration: none;
-        color: white;
-        font-size: 1rem;
-        text-transform: uppercase;
-        transition: color 0.3s;
     }
 
     .dropdown-menu {
@@ -140,6 +129,10 @@
         z-index: 1000;
     }
 
+    .dropdown:hover .dropdown-menu {
+        display: block; /* Show dropdown on hover */
+    }
+
     .dropdown-menu li a {
         display: block;
         text-decoration: none;
@@ -152,29 +145,13 @@
         background-color: #333;
     }
 
-    .dropdown:hover .dropdown-menu {
-        display: block; /* Show dropdown on hover */
-    }
-
-    .nav-right-link {
-        text-decoration: none;
-        color: white;
-        font-size: 1rem;
-        transition: color 0.3s;
-    }
-
     .search-bar {
-        height: 2rem;
-        width: 200px;
+        height: 1.0rem;
+        width: 260px;
         padding: 0.5rem;
         border-radius: 4px;
         border: 1px solid #ddd;
         outline: none;
-        font-size: 0.9rem;
-    }
-
-    .search-bar:focus {
-        border-color: #555;
     }
 
     .search-button {
@@ -205,7 +182,59 @@
         text-align: center;
         padding: 1rem 0;
     }
-    .nav-links li a, .dropdown-toggle, .nav-right-link {
-        color: white;
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .nav-links {
+            flex-direction: column; /* Stack links vertically */
+            gap: 0.5rem;
+        }
+
+        .navbar {
+            flex-direction: column; /* Stack navbar sections vertically */
+            align-items: flex-start;
+        }
+
+        .search-bar {
+            width: 100%; /* Expand search bar width */
+        }
+
+        .nav-right {
+            flex-wrap: wrap; /* Wrap right-side content */
+            justify-content: flex-start;
+        }
     }
+
+    @media (max-width: 480px) {
+        .logo {
+            font-size: 1.2rem;
+        }
+
+        .nav-links li a, .nav-right-link {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Global Link Styling */
+    a {
+        text-decoration: none; /* Remove underline */
+        color: white; /* Set default link color to white */
+    }
+
+    /* Specific Styles for Navbar Links */
+    .nav-links li a,
+    .nav-right-link,
+    .dropdown-toggle,
+    .dropdown-menu li a {
+        color: white; /* Ensure links are white */
+        text-decoration: none; /* Remove underline */
+    }
+
+    /* Hover Effect for Links */
+    .nav-links li a:hover,
+    .nav-right-link:hover,
+    .dropdown-menu li a:hover {
+        color: #aaa; /* Set a light gray color on hover */
+    }
+
 </style>
