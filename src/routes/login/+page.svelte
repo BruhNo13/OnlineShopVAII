@@ -7,7 +7,7 @@
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        // Handle login logic here
+
         alert('Login form submitted!');
     };
 </script>
@@ -49,7 +49,6 @@
 </div>
 
 <style>
-    /* Container */
     .login-container {
         max-width: 400px;
         margin: 0 auto;
@@ -57,7 +56,6 @@
         text-align: center;
     }
 
-    /* Header */
     .login-header {
         background-color: #222;
         color: white;
@@ -70,7 +68,6 @@
         font-size: 1.5rem;
     }
 
-    /* Form */
     .login-form {
         display: flex;
         flex-direction: column;
@@ -100,7 +97,6 @@
         border-radius: 5px;
     }
 
-    /* Password Group */
     .password-group {
         position: relative;
     }
@@ -127,7 +123,6 @@
         color: #000;
     }
 
-    /* Button */
     .login-button {
         background-color: #000;
         color: white;
@@ -142,7 +137,6 @@
         background-color: #333;
     }
 
-    /* Footer */
     .login-footer {
         margin-top: 1rem;
         font-size: 0.9rem;

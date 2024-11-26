@@ -1,4 +1,6 @@
 <script>
+    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('Supabase Anon Key:', import.meta.env.VITE_SUPABASE_ANON_KEY);
     let showPassword = false;
 
     const togglePasswordVisibility = () => {
@@ -10,7 +12,10 @@
 
         alert('Sign-up form submitted!');
     };
+
 </script>
+
+<p>Check the console to verify environment variables.</p>
 
 <div class="signup-container">
     <header class="signup-header">
@@ -57,7 +62,6 @@
 </div>
 
 <style>
-    /* Container */
     .signup-container {
         max-width: 400px;
         margin: 0 auto;
@@ -65,7 +69,6 @@
         text-align: center;
     }
 
-    /* Header */
     .signup-header {
         background-color: #222;
         color: white;
@@ -78,7 +81,6 @@
         font-size: 1.5rem;
     }
 
-    /* Form */
     .signup-form {
         display: flex;
         flex-direction: column;
@@ -104,7 +106,6 @@
         border-radius: 5px;
     }
 
-    /* Password Group */
     .password-group {
         position: relative;
     }
@@ -131,7 +132,6 @@
         color: #000;
     }
 
-    /* Button */
     .signup-button {
         background-color: #000;
         color: white;
@@ -146,7 +146,6 @@
         background-color: #333;
     }
 
-    /* Footer */
     .signup-footer {
         margin-top: 1rem;
         font-size: 0.9rem;

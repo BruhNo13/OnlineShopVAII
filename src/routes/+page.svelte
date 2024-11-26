@@ -20,7 +20,7 @@
             <a href="/products/1">View Details</a>
         </div>
         <div class="product-card">
-            <img src="/image2.png" alt="Product Name" />
+            <img src="/HomePage/image2.png" alt="Product Name" />
             <h3>Product Name</h3>
             <p>$79.99</p>
             <a href="/products/2">View Details</a>
@@ -31,7 +31,7 @@
 <style>
     /* Hero Section */
     .hero {
-        background-image: url('/hero-image.jpg');
+        background-image: url('/HomePage/image3.png');
         background-size: cover;
         background-position: center;
         height: 300px;
