@@ -1,67 +1,134 @@
-<script>
-    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-    console.log('Supabase Anon Key:', import.meta.env.VITE_SUPABASE_ANON_KEY);
+<script lang="ts">
+    import { supabase } from '../../lib/supabase.js';
+    let email = '';
+    let password = '';
+    let name = '';
+    let surname = '';
+    let gender = '';
     let showPassword = false;
+    let message = '';
 
-    const togglePasswordVisibility = () => {
+    // Funkcia na zmenu viditeľnosti hesla
+    function togglePasswordVisibility() {
         showPassword = !showPassword;
-    };
+    }
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-
-        alert('Sign-up form submitted!');
-    };
+    async function register() {
+        try {
+            // Sign up the user using Supabase Auth
+            const { data:authData, error } = await supabase.auth.signUp({
+                email,
+                password,
+            });
+            if (!error && authData.user != null)  {
+                const { data:myData, error } = await supabase.from('users').insert({
+                    id: authData.user.id,
+                    email: authData.user.email,
+                    name,
+                    surname,
+                    gender,
+                });
+                console.log(gender);
+                if (error) {
+                    console.log(error.message);
+                }
+            }
+            if (error) {
+                console.error(error);
+                message = 'Chyba pri registrácii: ' + error.message;
+            } else {
+                message = 'Úspešne zaregistrovaný! Skontrolujte svoj e-mail na potvrdenie.';
+                window.location.href = `/`;
+            }
+        } catch (err) {
+            console.error(err);
+            message = 'Došlo k neočakávanej chybe.';
+        }
+    }
 
 </script>
-
-<p>Check the console to verify environment variables.</p>
 
 <div class="signup-container">
     <header class="signup-header">
         <h1>FAKESHEIN</h1>
     </header>
 
-    <form on:submit={handleSubmit} class="signup-form">
+    <form on:submit={register} class="signup-form">
         <div class="form-group">
-            <label for="firstName">Name</label>
-            <input type="text" id="firstName" placeholder="Enter your first name" required />
+            <label for="firstName">Meno</label>
+            <input
+                    type="text"
+                    id="firstName"
+                    placeholder="Zadajte svoje meno"
+                    bind:value={name}
+                    required
+            />
         </div>
 
         <div class="form-group">
-            <label for="lastName">Last name</label>
-            <input type="text" id="lastName" placeholder="Enter your last name" required />
+            <label for="lastName">Priezvisko</label>
+            <input
+                    type="text"
+                    id="lastName"
+                    placeholder="Zadajte svoje priezvisko"
+                    bind:value={surname}
+                    required
+            />
+        </div>
+
+        <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender" bind:value={gender} required>
+                <option value="" disabled selected>Select your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select>
         </div>
 
         <div class="form-group">
             <label for="email">E-mail</label>
-            <input type="email" id="email" placeholder="Enter email" required />
+            <input
+                    type="email"
+                    id="email"
+                    placeholder="Zadajte svoj e-mail"
+                    bind:value={email}
+                    required
+            />
         </div>
 
         <div class="form-group password-group">
-            <label for="password">Password</label>
+            <label for="password">Heslo</label>
             <div class="password-container">
                 <input
                         type={showPassword ? 'text' : 'password'}
                         id="password"
-                        placeholder="Password"
+                        placeholder="Zadajte heslo"
+                        bind:value={password}
                         required
                 />
-                <button type="button" class="toggle-password" on:click={togglePasswordVisibility}>
+                <button
+                        type="button"
+                        class="toggle-password"
+                        on:click={togglePasswordVisibility}
+                >
                     {showPassword ? '🙈' : '👁️'}
                 </button>
             </div>
         </div>
 
-        <button type="submit" class="signup-button">Sign Up</button>
+        <button type="submit" class="signup-button">Registrovať</button>
     </form>
 
     <footer class="signup-footer">
-        <p>Already Signed In? <a href="/login">Log In</a></p>
+        <p>Už máte účet? <a href="/login">Prihlásiť sa</a></p>
     </footer>
 </div>
 
+<p>{message}</p>
+
 <style>
+    /* Štýly zostávajú rovnaké, ako v pôvodnom kóde */
     .signup-container {
         max-width: 400px;
         margin: 0 auto;
@@ -159,5 +226,15 @@
 
     .signup-footer a:hover {
         text-decoration: underline;
+    }
+
+    .form-group select {
+        width: 100%;
+        padding: 1.2rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        background-color: white;
+        color: #333;
     }
 </style>

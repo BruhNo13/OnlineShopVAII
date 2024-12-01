@@ -1,5 +1,8 @@
-<script>
-    export let data;
+<script lang="ts">
+    import Product from "../components/Product.svelte";
+
+    export const data: Record<string, any> = {}; // Use explicit type for `data`
+    console.log("som na hlavnej stranke");
 </script>
 
 <section class="hero">
@@ -9,24 +12,27 @@
     </div>
 </section>
 
-<section class="products">
-    <h2>Featured Products</h2>
-    <div class="product-grid">
-        <!-- Example Product Card -->
-        <div class="product-card">
-            <img src="/HomePage/image1.png" alt="Product Name" />
-            <h3>Product Name</h3>
-            <p>$99.99</p>
-            <a href="/products/1">View Details</a>
-        </div>
-        <div class="product-card">
-            <img src="/HomePage/image2.png" alt="Product Name" />
-            <h3>Product Name</h3>
-            <p>$79.99</p>
-            <a href="/products/2">View Details</a>
-        </div>
-    </div>
-</section>
+<Product id=2>
+
+</Product>
+<!--<section class="products">-->
+<!--    <h2>Featured Products</h2>-->
+<!--    <div class="product-grid">-->
+<!--        &lt;!&ndash; Example Product Card &ndash;&gt;-->
+<!--        <div class="product-card">-->
+<!--            <img src="/HomePage/image1.png" alt="Product Name" />-->
+<!--            <h3>Product Name</h3>-->
+<!--            <p>$99.99</p>-->
+<!--            <a href="/products/1">View Details</a>-->
+<!--        </div>-->
+<!--        <div class="product-card">-->
+<!--            <img src="/HomePage/image2.png" alt="Product Name" />-->
+<!--            <h3>Product Name</h3>-->
+<!--            <p>$79.99</p>-->
+<!--            <a href="/products/2">View Details</a>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
 
 <style>
     /* Hero Section */

@@ -1,5 +1,49 @@
-<script>
-    export let data;
+<script lang="ts">
+    import { onMount } from 'svelte';
+    import {supabase} from "$lib/supabase";
+
+    let userName: string | null = $state(null); // Explicitly define type
+    let showAdmin = false; // Default to hide ADMIN link
+    let role = '';
+
+    // On mount, check if the user is logged in
+    onMount(() => {
+        isLogged();
+    });
+
+    async function isLogged() {
+        const {data:{session}} = await supabase.auth.getSession();
+        if (session) {
+            console.log(session.user.email);
+            const {data, error} = await supabase.from('users').select('name, id, role').eq('id', session.user.id).single();
+            if (!error) {
+                userName = data.name;
+                role = data.role;
+                console.log(userName);
+            } else {
+                console.log('error zidan');
+            }
+        } else {
+            console.log('no session');
+        }
+    }
+
+    function logOut() {
+        // Clear session and redirect to login
+        const confirmLogOut = window.confirm('Are you sure you want to logout?');
+        if (!confirmLogOut) {
+            return;
+        }
+        supabase.auth.signOut();
+        userName = null;
+        role = '';
+        window.location.href = '/login';
+    }
+
+    function goToLogin() {
+        // Navigate to login page
+        window.location.href = '/login';
+    }
 </script>
 
 <header class="header">
@@ -42,6 +86,9 @@
                 <li><a href="/accessories">ACCESSORIES</a></li>
                 <li><a href="/brands">BRANDS</a></li>
                 <li><a href="/sales">SALES</a></li>
+                {#if role == 'admin'}
+                    <li><a href="/admin">ADMIN</a></li> <!-- Show ADMIN only if the user is logged in -->
+                {/if}
             </ul>
         </div>
         <div class="nav-right">
@@ -49,7 +96,16 @@
                 <input type="text" class="search-bar" placeholder="Search..." />
                 <button class="search-button">Search</button>
             </div>
-            <a href="/login" class="nav-right-link">Profile</a>
+            {#if userName}
+                <!-- Show user's name if logged in -->
+                <div class="dropdown">
+                    <a href="javascript:void(0)" on:click={logOut} class="nav-right-link">{userName}</a>
+                </div>
+
+            {:else}
+                <!-- Show "Profile" link if not logged in -->
+                <a href="javascript:void(0)" on:click={goToLogin} class="nav-right-link">Log in</a>
+            {/if}
             <a href="/favourites" class="nav-right-link">Favourites</a>
             <a href="/cart" class="nav-right-link">My Cart</a>
         </div>
@@ -65,6 +121,7 @@
 </footer>
 
 <style>
+
     body {
         margin: 0;
         font-family: Arial, sans-serif;

@@ -1,15 +1,39 @@
-<script>
+<script lang="ts">
+    import { supabase } from '../../lib/supabase.js';
+
+    let email = '';
+    let password = '';
+    let message = '';
     let showPassword = false;
+    let userName = '';
+    let isAdmin = false;
 
-    const togglePasswordVisibility = () => {
+    // Toggle password visibility
+    function togglePasswordVisibility() {
         showPassword = !showPassword;
-    };
+    }
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
+    // Login function
+    async function login() {
+        try {
+            const { data: user, error } = await supabase.auth.signInWithPassword({email, password});
 
-        alert('Login form submitted!');
-    };
+            if (error || !user) {
+                message = 'Nesprávny e-mail alebo heslo.';
+                return;
+            }
+
+            // Store user data
+            // userName = user.name;
+            // isAdmin = user.is_admin;
+
+            // Redirect to main page
+            window.location.href = `/`;
+        } catch (err) {
+            console.error('Došlo k neočakávanej chybe.', err);
+            message = 'Došlo k neočakávanej chybe.';
+        }
+    }
 </script>
 
 <div class="login-container">
@@ -17,36 +41,49 @@
         <h1>FAKESHEIN</h1>
     </header>
 
-    <form on:submit={handleSubmit} class="login-form">
+    <form on:submit|preventDefault={login} class="login-form">
         <div class="form-group">
             <label for="email">E-mail</label>
-            <input type="email" id="email" placeholder="Enter email" required />
+            <input
+                    type="email"
+                    id="email"
+                    placeholder="Zadajte svoj e-mail"
+                    bind:value={email}
+                    required
+            />
         </div>
 
         <div class="form-group password-group">
-            <label for="password">Password</label>
+            <label for="password">Heslo</label>
             <div class="password-container">
                 <input
                         type={showPassword ? 'text' : 'password'}
                         id="password"
-                        placeholder="Password"
+                        placeholder="Zadajte heslo"
+                        bind:value={password}
                         required
                 />
-                <button type="button" class="toggle-password" on:click={togglePasswordVisibility}>
+                <button
+                        type="button"
+                        class="toggle-password"
+                        on:click={togglePasswordVisibility}
+                >
                     {showPassword ? '🙈' : '👁️'}
                 </button>
             </div>
         </div>
 
-        <button type="submit" class="login-button">Log in</button>
+        <button type="submit" class="login-button">Prihlásiť</button>
     </form>
 
     <footer class="login-footer">
-        <a href="/forgot-password" class="forgot-password">Forgot password?</a>
+        <a href="/forgot-password" class="forgot-password">Zabudnuté heslo?</a>
         <hr />
-        <p>New customer? <a href="/signup" class="signup-link">Sign up</a></p>
+        <p>Nový používateľ? <a href="/signup" class="signup-link">Registrovať sa</a></p>
     </footer>
 </div>
+
+<p>{message}</p>
 
 <style>
     .login-container {
