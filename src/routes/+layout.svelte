@@ -4,18 +4,22 @@
 
     let userName: string | null = $state(null); // Explicitly define type
     let showAdmin = false; // Default to hide ADMIN link
-    let role = '';
+    let role = $state('');
 
     // On mount, check if the user is logged in
     onMount(() => {
         isLogged();
+        handleAuthStateChange();
     });
 
     async function isLogged() {
         const {data:{session}} = await supabase.auth.getSession();
         if (session) {
             console.log(session.user.email);
-            const {data, error} = await supabase.from('users').select('name, id, role').eq('id', session.user.id).single();
+            const {data, error} = await supabase.from('users')
+                .select('name, id, role')
+                .eq('id', session.user.id)
+                .single();
             if (!error) {
                 userName = data.name;
                 role = data.role;
@@ -28,8 +32,27 @@
         }
     }
 
-    function logOut() {
-        // Clear session and redirect to login
+    function handleAuthStateChange() {
+        supabase.auth.onAuthStateChange((event, session) => {
+            console.log(`Auth event: ${event}`);
+            if (event === 'SIGNED_OUT') {
+                console.log('User is signed out.');
+            }
+            console.log(`Auth event: ${event}`);
+            if (session) {
+                // If session exists, fetch the user data again
+                isLogged();
+            } else {
+                // If no session, reset user data
+                console.log('User signed out');
+                userName = null;
+                role = '';
+            }
+        });
+    }
+    // onAuthStateChange
+
+    async function logOut() {
         const confirmLogOut = window.confirm('Are you sure you want to logout?');
         if (!confirmLogOut) {
             return;
@@ -87,7 +110,7 @@
                 <li><a href="/brands">BRANDS</a></li>
                 <li><a href="/sales">SALES</a></li>
                 {#if role == 'admin'}
-                    <li><a href="/admin">ADMIN</a></li> <!-- Show ADMIN only if the user is logged in -->
+                    <li><a href="/admin">ADMIN</a></li>
                 {/if}
             </ul>
         </div>
@@ -97,13 +120,10 @@
                 <button class="search-button">Search</button>
             </div>
             {#if userName}
-                <!-- Show user's name if logged in -->
                 <div class="dropdown">
                     <a href="javascript:void(0)" on:click={logOut} class="nav-right-link">{userName}</a>
                 </div>
-
             {:else}
-                <!-- Show "Profile" link if not logged in -->
                 <a href="javascript:void(0)" on:click={goToLogin} class="nav-right-link">Log in</a>
             {/if}
             <a href="/favourites" class="nav-right-link">Favourites</a>
@@ -121,7 +141,6 @@
 </footer>
 
 <style>
-
     body {
         margin: 0;
         font-family: Arial, sans-serif;
@@ -130,32 +149,34 @@
     .header {
         background-color: black;
         color: white;
-        padding: 0.8rem 1rem;
+        padding: 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     .navbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap; /* Ensures content wraps on small screens */
-        padding: 0 0.5rem;
-    }
-
-    .nav-left, .nav-right {
-        display: flex;
-        align-items: center;
+        flex-wrap: wrap;
     }
 
     .nav-left {
-        gap: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
     }
 
     .nav-right {
+        display: flex;
+        align-items: center;
         gap: 1rem;
     }
 
     .logo {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         font-weight: bold;
         text-decoration: none;
         color: white;
@@ -164,22 +185,25 @@
     .nav-links {
         list-style: none;
         display: flex;
-        flex-wrap: wrap; /* Wrap navigation links on small screens */
         gap: 1rem;
         margin: 0;
         padding: 0;
     }
 
     .nav-links li {
-        position: relative; /* Needed for dropdown positioning */
+        position: relative;
+    }
+
+    a {
+        color: white;
     }
 
     .dropdown-menu {
-        display: none; /* Hide dropdown by default */
+        display: none;
         position: absolute;
         background-color: black;
         padding: 0.5rem 0;
-        top: 100%; /* Position below the parent */
+        top: 100%;
         left: 0;
         list-style: none;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -187,7 +211,7 @@
     }
 
     .dropdown:hover .dropdown-menu {
-        display: block; /* Show dropdown on hover */
+        display: block;
     }
 
     .dropdown-menu li a {
@@ -202,9 +226,15 @@
         background-color: #333;
     }
 
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
     .search-bar {
-        height: 1.0rem;
-        width: 260px;
+        height: 2rem;
+        width: 250px;
         padding: 0.5rem;
         border-radius: 4px;
         border: 1px solid #ddd;
@@ -214,7 +244,7 @@
     .search-button {
         height: 2rem;
         padding: 0 1rem;
-        background-color: #555;
+        background-color: #ff5722;
         color: white;
         border: none;
         border-radius: 4px;
@@ -224,7 +254,7 @@
     }
 
     .search-button:hover {
-        background-color: #333;
+        background-color: #e64a19;
     }
 
     .content {
@@ -243,55 +273,32 @@
     /* Responsive Styles */
     @media (max-width: 768px) {
         .nav-links {
-            flex-direction: column; /* Stack links vertically */
+            flex-direction: column;
             gap: 0.5rem;
         }
 
-        .navbar {
-            flex-direction: column; /* Stack navbar sections vertically */
-            align-items: flex-start;
-        }
-
         .search-bar {
-            width: 100%; /* Expand search bar width */
+            width: 100%;
         }
 
         .nav-right {
-            flex-wrap: wrap; /* Wrap right-side content */
-            justify-content: flex-start;
+            flex-wrap: wrap;
         }
     }
 
     @media (max-width: 480px) {
         .logo {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
         }
 
-        .nav-links li a, .nav-right-link {
+        .nav-links li a,
+        .nav-right-link {
             font-size: 0.9rem;
         }
-    }
 
-    /* Global Link Styling */
-    a {
-        text-decoration: none; /* Remove underline */
-        color: white; /* Set default link color to white */
+        .nav-links {
+            gap: 0.3rem;
+        }
     }
-
-    /* Specific Styles for Navbar Links */
-    .nav-links li a,
-    .nav-right-link,
-    .dropdown-toggle,
-    .dropdown-menu li a {
-        color: white; /* Ensure links are white */
-        text-decoration: none; /* Remove underline */
-    }
-
-    /* Hover Effect for Links */
-    .nav-links li a:hover,
-    .nav-right-link:hover,
-    .dropdown-menu li a:hover {
-        color: #aaa; /* Set a light gray color on hover */
-    }
-
 </style>
+
