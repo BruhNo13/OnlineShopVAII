@@ -8,12 +8,10 @@
     let userName = '';
     let isAdmin = false;
 
-    // Toggle password visibility
     function togglePasswordVisibility() {
         showPassword = !showPassword;
     }
 
-    // Login function
     async function login() {
         try {
             const { data: user, error } = await supabase.auth.signInWithPassword({email, password});
@@ -23,11 +21,6 @@
                 return;
             }
 
-            // Store user data
-            // userName = user.name;
-            // isAdmin = user.is_admin;
-
-            // Redirect to main page
             window.location.href = `/`;
         } catch (err) {
             console.error('Došlo k neočakávanej chybe.', err);

@@ -12,30 +12,22 @@
     async function loadAllProducts() {
         const { data, error } = await supabase
             .from('Products')
-            .select('id'); // Vyber všetky požadované stĺpce
+            .select('id');
 
         if (error) {
             console.error('Error loading products:', error.message);
             return;
         }
 
-        Products = data; // Naplnenie poľa Products dátami z databázy
+        Products = data;
         console.log('Products loaded successfully:', Products);
     }
-
-    // async function loadRecipeDetails() {
-    //     const { data, error } = await supabase.from('Products')
-    //         .select('name, price, image')
-    //         .eq('id', id)
-    //         .single();
-    //
-    // }
 
     onMount(() => {
         loadAllProducts();
     })
 
-    export const data: Record<string, any> = {}; // Use explicit type for `data`
+    export const data: Record<string, any> = {};
     console.log("som na hlavnej stranke");
 </script>
 
@@ -50,30 +42,8 @@
         <Product id={product.id} />
     {/each}
 </div>
-<!--    <Product id='80fdfbfe-c9f3-4dd1-b38c-6c6b77222cbe' />-->
-
-
-<!--<section class="products">-->
-<!--    <h2>Featured Products</h2>-->
-<!--    <div class="product-grid">-->
-<!--        &lt;!&ndash; Example Product Card &ndash;&gt;-->
-<!--        <div class="product-card">-->
-<!--            <img src="/HomePage/image1.png" alt="Product Name" />-->
-<!--            <h3>Product Name</h3>-->
-<!--            <p>$99.99</p>-->
-<!--            <a href="/products/1">View Details</a>-->
-<!--        </div>-->
-<!--        <div class="product-card">-->
-<!--            <img src="/HomePage/image2.png" alt="Product Name" />-->
-<!--            <h3>Product Name</h3>-->
-<!--            <p>$79.99</p>-->
-<!--            <a href="/products/2">View Details</a>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</section>-->
 
 <style>
-    /* Hero Section */
     .hero {
         background-image: url('/HomePage/image3.png');
         background-size: cover;
@@ -112,7 +82,7 @@
         font-size: 3rem;
         font-weight: bold;
         margin-bottom: 1rem;
-        color: #ff5722; /* Accent color */
+        color: #ff5722;
     }
 
     .hero p {
@@ -120,7 +90,6 @@
         line-height: 1.5;
     }
 
-    /* Products Grid */
     .products-grid {
         margin: 0;
         display: grid;
@@ -130,7 +99,6 @@
         background-color: #f9f9f9;
     }
 
-    /* Product Card */
     .product-card {
         background: white;
         border: 1px solid #ddd;
@@ -144,7 +112,7 @@
     .product-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        border-color: #ff5722; /* Highlight border */
+        border-color: #ff5722;
     }
 
     .product-card img {
@@ -169,7 +137,7 @@
     .product-card a {
         display: inline-block;
         padding: 0.5rem 1rem;
-        background-color: #ff5722; /* Accent color */
+        background-color: #ff5722;
         color: white;
         border-radius: 8px;
         text-decoration: none;
@@ -178,10 +146,9 @@
     }
 
     .product-card a:hover {
-        background-color: #e64a19; /* Darker shade of accent */
+        background-color: #e64a19;
     }
 
-    /* General Layout */
     body {
         font-family: 'Arial', sans-serif;
         margin: 0;
@@ -204,7 +171,7 @@
         text-align: center;
         font-size: 2rem;
         margin-bottom: 2rem;
-        color: #ff5722; /* Accent color */
+        color: #ff5722;
     }
 </style>
 

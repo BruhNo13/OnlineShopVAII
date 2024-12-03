@@ -2,9 +2,7 @@
     import {supabase} from "$lib/supabase";
     import {onMount} from "svelte";
 
-
     export let id: string;
-
 
     let product: { name: string; price: number; image: string } = {
         name: '',
@@ -37,33 +35,9 @@
         loadRecipeDetails();
     })
 
-    // export let id;
-    //
-    // export let imageSrc = '../../Products/product1.png';
-    // export let productName = 'Product Name';
-    // export let price = '0,00 €';
-    //
-    // const click = () => {
-    //     goto(`/product/${id}`);
-    // }
-    //
-    // let fileName: string | undefined;
-    //
-    // async function loadImage() {
-    //     const image = await supabase.from('Products').select("image").eq('id', '80fdfbfe-c9f3-4dd1-b38c-6c6b77222cbe').single();
-    //     if (image) {
-    //         let publicData;
-    //         ({data: publicData} = supabase.storage.from('images').getPublicUrl(image));
-    //         fileName = publicData.publicUrl || fileName;
-    //     }
-    //         console.log(image);
-    // }
-    // onMount(() => {
-    //     loadImage();
-    // })
+
 </script>
 
-<!--<div>{id}</div>-->
 <div class="product-card">
     <div class="image-container">
         <img src={product.image} alt={product.name} class="product-image" />
@@ -77,12 +51,8 @@
     </div>
 </div>
 
-<!--<button onclick={click}>-->
-<!--    nic-->
-<!--</button>-->
-
 <style>
-    /* Product Card Styles */
+
     .product-card {
         margin: 0px;
         width: 260px;
@@ -103,13 +73,12 @@
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
-    /* Image Container */
     .image-container {
         position: relative;
         width: 100%;
         height: 180px;
         overflow: hidden;
-        background-color: #f9f9f9; /* Fallback color for missing images */
+        background-color: #f9f9f9;
     }
 
     .product-image {
@@ -120,10 +89,9 @@
     }
 
     .image-container:hover .product-image {
-        transform: scale(1.05); /* Slight zoom on hover */
+        transform: scale(1.05);
     }
 
-    /* Wishlist Button */
     .wishlist-button {
         position: absolute;
         top: 10px;
@@ -144,7 +112,6 @@
         transform: scale(1.1);
     }
 
-    /* Product Info */
     .product-info {
         padding: 15px;
         text-align: center;
@@ -160,12 +127,11 @@
 
     .product-price {
         font-size: 16px;
-        color: #ff5722; /* Accent color for price */
+        color: #ff5722;
         margin: 5px 0;
         font-weight: 700;
     }
 
-    /* Add Responsive Design */
     @media (max-width: 768px) {
         .product-card {
             width: 100%;
@@ -179,11 +145,3 @@
         }
     }
 </style>
-
-<!--<style>-->
-<!--    button {-->
-<!--        width: 100px;-->
-<!--        height: 100px;-->
-<!--        background-color: red;-->
-<!--    }-->
-<!--</style>-->

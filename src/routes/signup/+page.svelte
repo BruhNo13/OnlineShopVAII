@@ -8,14 +8,12 @@
     let showPassword = false;
     let message = '';
 
-    // Funkcia na zmenu viditeľnosti hesla
     function togglePasswordVisibility() {
         showPassword = !showPassword;
     }
 
     async function register() {
         try {
-            // Sign up the user using Supabase Auth
             const { data:authData, error } = await supabase.auth.signUp({
                 email,
                 password,
@@ -128,7 +126,6 @@
 <p>{message}</p>
 
 <style>
-    /* Štýly zostávajú rovnaké, ako v pôvodnom kóde */
     .signup-container {
         max-width: 400px;
         margin: 0 auto;

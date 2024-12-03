@@ -2,11 +2,10 @@
     import { onMount } from 'svelte';
     import {supabase} from "$lib/supabase";
 
-    let userName: string | null = $state(null); // Explicitly define type
-    let showAdmin = false; // Default to hide ADMIN link
+    let userName: string | null = $state(null);
+    let showAdmin = false;
     let role = $state('');
 
-    // On mount, check if the user is logged in
     onMount(() => {
         isLogged();
         handleAuthStateChange();
@@ -37,34 +36,50 @@
             console.log(`Auth event: ${event}`);
             if (event === 'SIGNED_OUT') {
                 console.log('User is signed out.');
-            }
-            console.log(`Auth event: ${event}`);
-            if (session) {
-                // If session exists, fetch the user data again
-                isLogged();
-            } else {
-                // If no session, reset user data
-                console.log('User signed out');
                 userName = null;
                 role = '';
             }
+
+            if (event === 'SIGNED_IN') {
+                console.log('User is signed in.');
+                isLogged();
+            }
         });
     }
-    // onAuthStateChange
 
     async function logOut() {
         const confirmLogOut = window.confirm('Are you sure you want to logout?');
         if (!confirmLogOut) {
             return;
         }
-        supabase.auth.signOut();
-        userName = null;
-        role = '';
-        window.location.href = '/login';
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            console.error('No active session found.');
+            alert('You are not logged in!');
+            return;
+        }
+
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Error signing out:', error.message);
+                alert('Logout failed. Please try again.');
+                return;
+            }
+
+            userName = null;
+            role = '';
+            console.log('User successfully logged out.');
+            window.location.href = '/login';
+        } catch (err) {
+            console.error('Unexpected error during logout:', err);
+        }
     }
 
+
+
     function goToLogin() {
-        // Navigate to login page
         window.location.href = '/login';
     }
 </script>
