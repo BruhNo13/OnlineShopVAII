@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { supabase } from "$lib/supabase";
     import Product from "../../components/Product.svelte";
 
     interface ProductData {
@@ -18,16 +17,22 @@
     });
 
     async function fetchProducts() {
-        const { data, error } = await supabase.from("Products").select("*");
-        if (!error) {
-            products = data;
-        } else {
-            console.error("Error fetching products:", error);
-        }
-    }
+        try {
+            const response = await fetch('/api/products', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            });
 
-    function selectItem(product: ProductData) {
-        selectedItem = selectedItem === product ? null : product;
+            const result = await response.json();
+
+            if (result.success) {
+                products = result.products;
+            } else {
+                console.error('Error fetching products:', result.message);
+            }
+        } catch (err) {
+            console.error('Unexpected error fetching products:', err);
+        }
     }
 
     function addProduct() {
@@ -50,27 +55,32 @@
         if (!confirmDelete) return;
 
         try {
-            const { error } = await supabase
-                .from("Products")
-                .delete()
-                .eq("id", selectedItem.id);
+            const response = await fetch('/api/products', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: selectedItem.id }),
+            });
 
-            if (error) {
-                console.error("Error deleting product:", error.message);
-                alert("Failed to delete product. Please try again.");
+            const result = await response.json();
+
+            if (!result.success) {
+                alert('Failed to delete product. Please try again.');
                 return;
             }
 
             products = products.filter(product => selectedItem && product.id !== selectedItem.id);
             selectedItem = null;
 
-            alert("Product deleted successfully.");
+            alert('Product deleted successfully.');
         } catch (err) {
-            console.error("Unexpected error deleting product:", err);
-            alert("An unexpected error occurred. Please try again.");
+            console.error('Unexpected error deleting product:', err);
+            alert('An unexpected error occurred. Please try again.');
         }
     }
 
+    function selectItem(product: ProductData) {
+        selectedItem = selectedItem === product ? null : product;
+    }
 </script>
 
 <main class="admin-page">
