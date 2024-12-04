@@ -60,32 +60,19 @@
     }
 
     async function login() {
-        if (!isFormValid) {
-            message = 'Please correct the errors before logging in.';
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+
+        const result = await response.json();
+        if (!result.success) {
+            message = result.message;
             return;
         }
 
-        try {
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const result = await response.json();
-
-            if (!result.success) {
-                message = result.message;
-                return;
-            }
-
-            localStorage.setItem('username', result.user);
-
-            window.location.href = `/`;
-        } catch (err) {
-            console.error('An unexpected error occurred:', err);
-            message = 'An unexpected error occurred.';
-        }
+        window.location.href = '/';
     }
 </script>
 

@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
 
     let username = '';
+    let userRole = '';
 
     export let data: { user: string | null; role: string | null };
 
@@ -22,14 +23,18 @@
                 userName = null;
                 role = null;
                 window.location.reload();
+                window.location.href = '/';
             } else {
                 console.error('Failed to log out.');
             }
         }
+
     }
 
     onMount(() => {
         username = localStorage.getItem('username') || '';
+        userRole = localStorage.getItem('userRole') || '';
+        // window.location.href = '/';
     });
 
 </script>

@@ -106,41 +106,33 @@
         isFormValid = validateForm();
     }
 
-    async function register() {
+    async function signup() {
+        console.log('Sending signup request');
         try {
-
-            const userData = {
-                email,
-                password,
-                name,
-                surname,
-                gender,
-            };
-
-            const response = await fetch('/api/register', {
+            const response = await fetch('/api/signup', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userData),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, name }),
             });
 
-            const result = await response.json();
+            console.log('Received response from server:', response);
 
             if (!response.ok) {
-                console.error("Registration error:", result.error);
-                message = `Registration failed: ${result.error}`;
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Signup result:', result);
+
+            if (!result.success) {
+                message = result.message;
                 return;
             }
 
-            console.log("Registration successful:", result.message);
-            message = "Successfully registered! Redirecting...";
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 1000);
+            window.location.href = '/';
         } catch (error) {
-            console.error("Unexpected registration error:", error);
-            message = "An unexpected error occurred during registration.";
+            console.error('Error during signup:', error);
+            message = 'An unexpected error occurred.';
         }
     }
 
@@ -152,7 +144,7 @@
         <h1>FAKESHEIN</h1>
     </header>
 
-    <form on:submit|preventDefault={register} class="signup-form">
+    <form on:submit|preventDefault={signup} class="signup-form">
         <!-- Name -->
         <div class="form-group {nameError ? 'error' : ''}">
             <label for="name">Name</label>
