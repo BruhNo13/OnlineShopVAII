@@ -1,34 +1,39 @@
 <script lang="ts">
     import Product from "../components/Product.svelte";
-    import {supabase} from "$lib/supabase";
-    import {onMount} from "svelte";
 
-    interface product {
+    interface ProductInterface {
         id: string;
+        name: string;
+        image: string;
+        price: number;
     }
-    let Products: product[] = [];
 
+    let products: ProductInterface[] = [];
 
-    async function loadAllProducts() {
-        const { data, error } = await supabase
-            .from('Products')
-            .select('id');
+    async function loadProducts() {
+        try {
+            const response = await fetch('/api/products', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
-        if (error) {
-            console.error('Error loading products:', error.message);
-            return;
+            if (!response.ok) {
+                console.error('Failed to fetch products:', response.statusText);
+                return;
+            }
+
+            const data = await response.json();
+            products = data.products;
+            console.log('Products loaded successfully:', products);
+        } catch (error) {
+            console.error('Error loading products:', error);
         }
-
-        Products = data;
-        console.log('Products loaded successfully:', Products);
     }
 
-    onMount(() => {
-        loadAllProducts();
-    })
-
-    export const data: Record<string, any> = {};
-    console.log("som na hlavnej stranke");
+    // Load products on component mount
+    loadProducts();
 </script>
 
 <section class="hero">
@@ -37,8 +42,9 @@
         <p>Your one-stop shop for clothes and sneakers.</p>
     </div>
 </section>
+
 <div class="products-grid">
-    {#each Products as product}
+    {#each products as product}
         <Product id={product.id} />
     {/each}
 </div>

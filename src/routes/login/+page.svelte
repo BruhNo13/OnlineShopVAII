@@ -5,26 +5,79 @@
     let password = '';
     let message = '';
     let showPassword = false;
-    let userName = '';
-    let isAdmin = false;
+    let isFormValid = false;
+
+    let emailError = '';
+    let passwordError = '';
+
+    let emailTouched = false;
+    let passwordTouched = false;
 
     function togglePasswordVisibility() {
         showPassword = !showPassword;
     }
 
+    function validateEmail(email: string): boolean {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            emailError = 'Enter a valid email address!';
+            return false;
+        }
+        emailError = '';
+        return true;
+    }
+
+    function validatePassword(password: string): boolean {
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            passwordError = 'Password must have at least 8 characters, one uppercase letter, one number, and one special character.';
+            return false;
+        }
+        passwordError = '';
+        return true;
+    }
+
+    function validateForm(): void {
+        const isEmailValid = validateEmail(email);
+        const isPasswordValid = validatePassword(password);
+        isFormValid = isEmailValid && isPasswordValid;
+    }
+
+    function handleBlur(field: 'email' | 'password') {
+        if (field === 'email') {
+            emailTouched = true;
+            validateEmail(email);
+        } else if (field === 'password') {
+            passwordTouched = true;
+            validatePassword(password);
+        }
+        validateForm();
+    }
+
+    function handleInput(field: 'email' | 'password') {
+        if (field === 'email' && emailTouched) validateEmail(email);
+        if (field === 'password' && passwordTouched) validatePassword(password);
+        validateForm();
+    }
+
     async function login() {
+        if (!isFormValid) {
+            message = 'Please correct the errors before logging in.';
+            return;
+        }
+
         try {
-            const { data: user, error } = await supabase.auth.signInWithPassword({email, password});
+            const { data: user, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error || !user) {
-                message = 'Nesprávny e-mail alebo heslo.';
+                message = 'Incorrect email or password.';
                 return;
             }
 
             window.location.href = `/`;
         } catch (err) {
-            console.error('Došlo k neočakávanej chybe.', err);
-            message = 'Došlo k neočakávanej chybe.';
+            console.error('An unexpected error occurred.', err);
+            message = 'An unexpected error occurred.';
         }
     }
 </script>
@@ -35,25 +88,32 @@
     </header>
 
     <form on:submit|preventDefault={login} class="login-form">
-        <div class="form-group">
+        <div class="form-group {emailError ? 'error' : ''}">
             <label for="email">E-mail</label>
             <input
                     type="email"
                     id="email"
-                    placeholder="Zadajte svoj e-mail"
+                    placeholder="Enter your email"
                     bind:value={email}
+                    on:blur={() => handleBlur('email')}
+                    on:input={() => handleInput('email')}
                     required
             />
+            {#if emailTouched && emailError}
+                <p class="error-message">{emailError}</p>
+            {/if}
         </div>
 
-        <div class="form-group password-group">
-            <label for="password">Heslo</label>
+        <div class="form-group password-group {passwordError ? 'error' : ''}">
+            <label for="password">Password</label>
             <div class="password-container">
                 <input
                         type={showPassword ? 'text' : 'password'}
                         id="password"
-                        placeholder="Zadajte heslo"
+                        placeholder="Enter your password"
                         bind:value={password}
+                        on:blur={() => handleBlur('password')}
+                        on:input={() => handleInput('password')}
                         required
                 />
                 <button
@@ -64,15 +124,18 @@
                     {showPassword ? '🙈' : '👁️'}
                 </button>
             </div>
+            {#if passwordTouched && passwordError}
+                <p class="error-message">{passwordError}</p>
+            {/if}
         </div>
 
-        <button type="submit" class="login-button">Prihlásiť</button>
+        <button type="submit" class="login-button" disabled={!isFormValid}>Log In</button>
     </form>
 
     <footer class="login-footer">
-        <a href="/forgot-password" class="forgot-password">Zabudnuté heslo?</a>
+        <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
         <hr />
-        <p>Nový používateľ? <a href="/signup" class="signup-link">Registrovať sa</a></p>
+        <p>New user? <a href="/signup" class="signup-link">Sign up</a></p>
     </footer>
 </div>
 
@@ -195,5 +258,10 @@
 
     .login-footer .signup-link:hover {
         text-decoration: underline;
+    }
+    .error-message {
+        color: red;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
     }
 </style>

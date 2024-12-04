@@ -1,86 +1,27 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import {supabase} from "$lib/supabase";
+    export let data: { user: string | null; role: string | null };
 
-    let userName: string | null = $state(null);
-    let showAdmin = false;
-    let role = $state('');
-
-    onMount(() => {
-        isLogged();
-        handleAuthStateChange();
-    });
-
-    async function isLogged() {
-        const {data:{session}} = await supabase.auth.getSession();
-        if (session) {
-            console.log(session.user.email);
-            const {data, error} = await supabase.from('users')
-                .select('name, id, role')
-                .eq('id', session.user.id)
-                .single();
-            if (!error) {
-                userName = data.name;
-                role = data.role;
-                console.log(userName);
-            } else {
-                console.log('error zidan');
-            }
-        } else {
-            console.log('no session');
-        }
-    }
-
-    function handleAuthStateChange() {
-        supabase.auth.onAuthStateChange((event, session) => {
-            console.log(`Auth event: ${event}`);
-            if (event === 'SIGNED_OUT') {
-                console.log('User is signed out.');
-                userName = null;
-                role = '';
-            }
-
-            if (event === 'SIGNED_IN') {
-                console.log('User is signed in.');
-                isLogged();
-            }
-        });
-    }
+    let userName: string | null = data.user;
+    let role: string | null = data.role;
 
     async function logOut() {
-        const confirmLogOut = window.confirm('Are you sure you want to logout?');
-        if (!confirmLogOut) {
-            return;
-        }
+        const confirmLogOut = window.confirm('Are you sure you want to log out?');
+        if (confirmLogOut) {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            console.error('No active session found.');
-            alert('You are not logged in!');
-            return;
-        }
-
-        try {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error('Error signing out:', error.message);
-                alert('Logout failed. Please try again.');
-                return;
+            if (response.ok) {
+                userName = null;
+                role = null;
+                window.location.reload();
+            } else {
+                console.error('Failed to log out.');
             }
-
-            userName = null;
-            role = '';
-            console.log('User successfully logged out.');
-            window.location.href = '/login';
-        } catch (err) {
-            console.error('Unexpected error during logout:', err);
         }
-    }
-
-
-
-    function goToLogin() {
-        window.location.href = '/login';
     }
 </script>
 
@@ -124,7 +65,7 @@
                 <li><a href="/accessories">ACCESSORIES</a></li>
                 <li><a href="/brands">BRANDS</a></li>
                 <li><a href="/sales">SALES</a></li>
-                {#if role == 'admin'}
+                {#if role === 'admin'}
                     <li><a href="/admin">ADMIN</a></li>
                 {/if}
             </ul>
@@ -136,10 +77,11 @@
             </div>
             {#if userName}
                 <div class="dropdown">
-                    <a href="javascript:void(0)" on:click={logOut} class="nav-right-link">{userName}</a>
+                    <span class="nav-right-link">{userName}</span>
+                    <button on:click={logOut}>Log out</button>
                 </div>
             {:else}
-                <a href="javascript:void(0)" on:click={goToLogin} class="nav-right-link">Log in</a>
+                <a href="/login" class="nav-right-link">Log in</a>
             {/if}
             <a href="/favourites" class="nav-right-link">Favourites</a>
             <a href="/cart" class="nav-right-link">My Cart</a>
@@ -148,7 +90,7 @@
 </header>
 
 <main class="content">
-    <slot /> <!-- Render child page content -->
+    <slot />
 </main>
 
 <footer class="footer">

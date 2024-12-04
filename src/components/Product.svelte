@@ -11,7 +11,7 @@
     }
 
     let imagePath = '';
-    async function loadRecipeDetails() {
+    async function loadProductDetails() {
         const { data, error } = await supabase.from('Products')
             .select('name, price, image')
             .eq('id', id)
@@ -32,7 +32,7 @@
     }
 
     onMount(() => {
-        loadRecipeDetails();
+        loadProductDetails();
     })
 
 
