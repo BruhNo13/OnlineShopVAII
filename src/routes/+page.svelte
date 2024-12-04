@@ -32,7 +32,6 @@
         }
     }
 
-    // Load products on component mount
     loadProducts();
 </script>
 

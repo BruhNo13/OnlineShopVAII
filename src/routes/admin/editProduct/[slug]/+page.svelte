@@ -1,67 +1,12 @@
 <script lang="ts">
-    import { supabase } from "$lib/supabase";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
     import { page } from "$app/stores";
-    import type { PageData } from "./$types";
 
-    let { productId } = $page.data as { productId: string };
-    console.log(productId);
-    let product = {
-        name: "",
-        price: 0,
-        image: "",
-        type: "tshirt",
-        size: 0,
-        color: "red",
-        brand: "adidas",
-        sale: 0,
-        gender: "male",
-    };
+    let { product } = $page.data;
 
     let dragOver = false;
     let uploadingImage = false;
-
-    onMount(async () => {
-        try {
-            if (!productId) {
-                throw new Error("Product ID is missing.");
-            }
-
-            const { data, error } = await supabase
-                .from("Products")
-                .select("*")
-                .eq("id", productId)
-                .single();
-
-            if (error) {
-                throw new Error(error.message);
-            }
-
-            if (data) {
-                product = {
-                    name: data.name || "",
-                    price: data.price || 0,
-                    image: data.image || "",
-                    type: data.type || "tshirt",
-                    size: data.size || 0,
-                    color: data.color || "red",
-                    brand: data.brand || "adidas",
-                    sale: data.sale || 0,
-                    gender: data.gender || "male",
-                };
-            }
-        } catch (err) {
-            if (err instanceof Error) {
-                console.error(err.message);
-                alert("Could not load product details. Redirecting...");
-            } else {
-                console.error("An unknown error occurred:", err);
-                alert("An unknown error occurred. Redirecting...");
-            }
-            goto("/admin");
-        }
-    });
 
     async function handleImageUpload(event: DragEvent | Event) {
         uploadingImage = true;
@@ -79,88 +24,54 @@
             return;
         }
 
-        const filePath = `products/${file.name}`;
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
 
-        const { data: existingFile, error: listError } = await supabase.storage
-            .from("images")
-            .list("products", { search: file.name });
+            const response = await fetch("/api/products/images", {
+                method: "POST",
+                body: formData,
+            });
 
-        if (listError) {
-            console.error("Error checking existing file:", listError.message);
-            alert("Failed to verify if the file already exists.");
-            uploadingImage = false;
-            return;
-        }
+            const result = await response.json();
 
-        if (existingFile && existingFile.length > 0) {
-            product.image = filePath;
-            alert("File already exists. Using the existing file.");
-            uploadingImage = false;
-            return;
-        }
+            if (!result.success) {
+                alert("Failed to upload image: " + result.message);
+                return;
+            }
 
-        const { error: uploadError } = await supabase.storage
-            .from("images")
-            .upload(filePath, file, { cacheControl: "3600", upsert: false });
-
-        if (uploadError) {
-            console.error("Error uploading file:", uploadError.message);
-            alert("Failed to upload image. Please try again.");
-        } else {
-            product.image = filePath;
+            product.image = result.filePath;
             alert("Image uploaded successfully!");
+        } catch (err) {
+            console.error("Error uploading image:", err);
+            alert("Failed to upload image. Please try again.");
+        } finally {
+            uploadingImage = false;
         }
-
-        uploadingImage = false;
     }
 
     async function updateProduct() {
         try {
-            if (!productId) {
-                throw new Error("Product ID is missing.");
-            }
+            const response = await fetch(`/admin/editProduct/${product.id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(product),
+            });
 
-            if (!product.name || product.price < 0 || product.sale < 0 || product.sale > 100) {
-                alert("Please fill in all required fields and ensure values are valid.");
+            const result = await response.json();
+
+            if (!result.success) {
+                alert('Failed to update product. Please try again.');
                 return;
-            }
-
-            console.log("Updating product with ID:", productId);
-            console.log("Product details being updated:", product);
-
-            const { error } = await supabase
-                .from("Products")
-                .update({
-                    name: product.name,
-                    price: product.price,
-                    image: product.image,
-                    type: product.type,
-                    size: product.size,
-                    color: product.color,
-                    brand: product.brand,
-                    sale: product.sale,
-                    gender: product.gender,
-                })
-                .eq("id", productId);
-
-            if (error) {
-                throw new Error(error.message);
             }
 
             alert("Product updated successfully!");
             goto("/admin");
         } catch (err) {
-            if (err instanceof Error) {
-                console.error(err.message);
-                alert("Failed to update product. Please try again.");
-            } else {
-                console.error("An unknown error occurred:", err);
-                alert("An unknown error occurred. Redirecting...");
-            }
+            console.error("Error updating product:", err);
+            alert("Failed to update product. Please try again.");
         }
     }
-
-
 </script>
 
 <main class="edit-product-page">
@@ -186,10 +97,8 @@
             <p>{dragOver ? "Drop your image here" : "Drag and drop an image or click to upload"}</p>
             <input type="file" id="image" on:change={handleImageUpload} accept="image/*" />
         </div>
-        <!--{#if product.image}-->
-        <!--    <img src={`https://<your-supabase-project>.supabase.co/storage/v1/object/${product.image}`} alt="Uploaded image preview" class="image-preview" />-->
-        <!--{/if}-->
-        <!-- Other Fields -->
+
+        <!-- Type -->
         <label for="type">Type:</label>
         <select id="type" bind:value={product.type} required>
             <option value="tshirt">T-Shirt</option>
@@ -200,6 +109,7 @@
             <option value="shoes">Shoes</option>
         </select>
 
+        <!-- Other fields -->
         <label for="size">Size:</label>
         <input id="size" type="number" bind:value={product.size} min="0" required />
 
@@ -244,6 +154,7 @@
         </button>
     </form>
 </main>
+
 
 <style>
     .add-product-page {

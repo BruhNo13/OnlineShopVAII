@@ -66,7 +66,6 @@
         }
     }
 
-
     function validateForm(): boolean {
         let isValid = true;
 
