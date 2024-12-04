@@ -1,4 +1,8 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+
+    let username = '';
+
     export let data: { user: string | null; role: string | null };
 
     let userName: string | null = data.user;
@@ -23,6 +27,11 @@
             }
         }
     }
+
+    onMount(() => {
+        username = localStorage.getItem('username') || '';
+    });
+
 </script>
 
 <header class="header">

@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { supabase } from '../../lib/supabase.js';
 
     let email = '';
     let password = '';
@@ -67,16 +66,24 @@
         }
 
         try {
-            const { data: user, error } = await supabase.auth.signInWithPassword({ email, password });
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
 
-            if (error || !user) {
-                message = 'Incorrect email or password.';
+            const result = await response.json();
+
+            if (!result.success) {
+                message = result.message;
                 return;
             }
 
+            localStorage.setItem('username', result.user);
+
             window.location.href = `/`;
         } catch (err) {
-            console.error('An unexpected error occurred.', err);
+            console.error('An unexpected error occurred:', err);
             message = 'An unexpected error occurred.';
         }
     }
