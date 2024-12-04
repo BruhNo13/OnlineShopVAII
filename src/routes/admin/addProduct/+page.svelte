@@ -23,7 +23,7 @@
     let dragOver = false;
     let uploadingImage = false;
 
-    async function handleImageUpload(event: DragEvent | Event) {
+    async function handleImageUpload(event: Event | DragEvent) {
         uploadingImage = true;
 
         let file: File | null = null;
@@ -65,6 +65,7 @@
             uploadingImage = false;
         }
     }
+
 
     function validateForm(): boolean {
         let isValid = true;

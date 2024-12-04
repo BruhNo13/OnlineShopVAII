@@ -37,13 +37,22 @@ export async function POST({ request }) {
 
 
 export async function DELETE({ request }) {
-    const { id } = await request.json();
+    try {
+        const { id } = await request.json();
 
-    const { error } = await supabase.from('Products').delete().eq('id', id);
-    if (error) {
-        return json({ success: false, message: 'Failed to delete product.' }, { status: 500 });
+        console.log('Received ID for deletion:', id);
+
+        const { error } = await supabase.from('Products').delete().eq('id', id);
+
+        if (error) {
+            console.error('Error deleting product:', error.message);
+            return json({ success: false, message: 'Failed to delete product.' }, { status: 500 });
+        }
+
+        return json({ success: true, message: 'Product deleted successfully.' });
+    } catch (err) {
+        console.error('Unexpected error:', err);
+        return json({ success: false, message: 'An unexpected error occurred.' }, { status: 500 });
     }
-
-    return json({ success: true, message: 'Product deleted successfully.' });
 }
 

@@ -51,14 +51,20 @@
             return;
         }
 
-        const confirmDelete = window.confirm(`Are you sure you want to delete the product "${selectedItem.name}"?`);
+        const productToDelete = selectedItem;
+
+        const confirmDelete = window.confirm(
+            `Are you sure you want to delete the product "${productToDelete.name}"?`
+        );
         if (!confirmDelete) return;
 
         try {
+            console.log('Deleting product with ID:', productToDelete.id);
+
             const response = await fetch('/api/products', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: selectedItem.id }),
+                body: JSON.stringify({ id: productToDelete.id }),
             });
 
             const result = await response.json();
@@ -68,15 +74,17 @@
                 return;
             }
 
-            products = products.filter(product => selectedItem && product.id !== selectedItem.id);
+            alert('Product deleted successfully.');
             selectedItem = null;
 
-            alert('Product deleted successfully.');
+            window.location.reload();
         } catch (err) {
             console.error('Unexpected error deleting product:', err);
             alert('An unexpected error occurred. Please try again.');
         }
     }
+
+
 
     function selectItem(product: ProductData) {
         selectedItem = selectedItem === product ? null : product;
