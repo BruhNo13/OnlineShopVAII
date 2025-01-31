@@ -72,6 +72,15 @@
         <button class="action-button edit" onclick={editProduct} disabled={!selectedItem}>Edit</button>
         <button class="action-button delete" onclick={deleteProduct} disabled={!selectedItem}>Delete</button>
     </div>
+
+    <div class="admin-side-buttons">
+        <button class="side-button orders" onclick={() => window.location.href = '/admin/orders'}>
+            Orders
+        </button>
+        <button class="side-button users" onclick={() => window.location.href = '/admin/users'}>
+            Users
+        </button>
+    </div>
 </main>
 
 <style>
@@ -152,6 +161,43 @@
         background-color: #ccc;
         color: #666;
         cursor: not-allowed;
+    }
+    .admin-side-buttons {
+        position: fixed;
+        top: 10rem;
+        left: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .side-button {
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 150px;
+        text-align: center;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .side-button.orders {
+        background-color: #ff9800;
+        color: white;
+    }
+
+    .side-button.orders:hover {
+        background-color: #e68900;
+    }
+
+    .side-button.users {
+        background-color: #3f51b5;
+        color: white;
+    }
+
+    .side-button.users:hover {
+        background-color: #2e3e9e;
     }
 </style>
 

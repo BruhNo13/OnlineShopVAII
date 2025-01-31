@@ -33,7 +33,7 @@ export const load: PageServerLoad = async (): Promise<{ products: any[] }> => {
             };
         });
 
-        console.log('Returning products to client:', products);
+        // console.log('Returning products to client:', products);
         return { products };
     } catch (err) {
         console.error('Unexpected error:', err);

@@ -1,7 +1,33 @@
 <script lang="ts">
     import { page } from '$app/stores';
 
-    let { product }: { product: App.Product } = $page.data;
+    // type Product = {
+    //     id: string;
+    //     name: string;
+    //     price: number;
+    //     image: string;
+    //     type: string;
+    //     sizes: { size: number; quantity: number }[];
+    //     color: string;
+    //     brand: string;
+    //     sale: number;
+    //     gender: string;
+    // };
+
+    export let ProductData = $page.data;
+
+    const product = ProductData.product;
+
+    let selectedSize: number | null = null;
+
+    function addToCart() {
+        if (!selectedSize) {
+            alert('Prosím, vyberte veľkosť.');
+            return;
+        }
+
+        alert(`Produkt ${product.name} vo veľkosti ${selectedSize} bol pridaný do košíka.`);
+    }
 </script>
 
 <svelte:head>
@@ -21,83 +47,88 @@
             <div class="price-section">
                 <p class="product-price">{product.price.toFixed(2)} &euro;</p>
                 {#if product.sale > 0}
-                    <p class="product-sale">Zľava: -{product.sale}%</p>
+                    <p class="product-sale">Sale: -{product.sale}%</p>
                 {/if}
             </div>
 
             <div class="attributes">
-                <p><strong>Veľkosť:</strong> {product.size}</p>
-                <p><strong>Farba:</strong> {product.color}</p>
-                <p><strong>Značka:</strong> {product.brand}</p>
+                <label for="size-select"><strong>Size:</strong></label>
+                <select id="size-select" bind:value={selectedSize}>
+                    <option value="" disabled selected>Choose size...</option>
+                    {#each product.sizes as size}
+                        <option value={size.size}>{size.size}</option>
+                    {/each}
+                </select>
+
+                <p><strong>Color:</strong> {product.color}</p>
+                <p><strong>Brand:</strong> {product.brand}</p>
             </div>
 
-            <button class="add-to-cart">Pridať do košíka</button>
+            <button class="add-to-cart" on:click={addToCart} disabled={!selectedSize}>
+                Add to cart
+            </button>
         </div>
     </div>
 </div>
 
 <style>
-    html, body {
-        height: 100%;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        font-family: Arial, sans-serif;
-    }
-
     .product-page {
         flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         padding: 1rem;
+        background-color: #f9f9f9;
     }
 
     .product-content {
         display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
         width: 100%;
         max-width: 1200px;
-        gap: 2rem;
-        background: #fff;
         padding: 2rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        overflow: hidden;
     }
 
     .product-images {
-        flex: 1;
+        flex: 1 1 40%;
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        height: 500px;
+        background-color: #ececec;
+        border-radius: 12px;
+        height: 400px;
+        overflow: hidden;
     }
 
     .product-images img {
         max-width: 100%;
-        height: 100%;
+        height: auto;
         object-fit: cover;
-        border-radius: 8px;
         transition: transform 0.3s ease;
     }
 
     .product-images img:hover {
-        transform: scale(1.05);
+        transform: scale(1.1);
     }
 
     .product-details {
-        flex: 1;
+        flex: 1 1 50%;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        gap: 1rem;
         padding: 1rem;
     }
 
     .product-name {
         font-size: 2.5rem;
         font-weight: bold;
-        margin-bottom: 0.5rem;
+        color: #333;
     }
 
     .product-type {
@@ -108,9 +139,9 @@
 
     .price-section {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: 1rem;
-        margin-bottom: 1rem;
     }
 
     .product-price {
@@ -123,6 +154,9 @@
         font-size: 1.2rem;
         color: #e64a19;
         font-weight: bold;
+        background: #ffe5e5;
+        padding: 0.3rem 0.6rem;
+        border-radius: 8px;
     }
 
     .attributes p {
@@ -134,20 +168,36 @@
     .add-to-cart {
         display: block;
         width: 100%;
-        background-color: black;
+        background-color: #007bff;
         color: white;
-        padding: 1rem;
+        padding: 0.8rem 1rem;
         border: none;
         border-radius: 8px;
-        font-size: 1rem;
+        font-size: 1.2rem;
         font-weight: bold;
         cursor: pointer;
-        transition: background-color 0.3s ease;
         text-align: center;
+        transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
     .add-to-cart:hover {
-        background-color: #333;
+        background-color: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    select {
+        padding: 0.5rem;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #fff;
+        transition: border-color 0.3s ease;
+    }
+
+    select:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
 
     @media (max-width: 768px) {
@@ -160,7 +210,12 @@
         }
 
         .product-details {
-            flex: 1;
+            padding: 0;
+        }
+
+        .add-to-cart {
+            font-size: 1rem;
         }
     }
 </style>
+
