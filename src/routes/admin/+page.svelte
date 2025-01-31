@@ -1,17 +1,6 @@
 <script lang="ts">
     import Product from '../../components/Product.svelte';
 
-    // export let products: {
-    //     id: string;
-    //     name: string;
-    //     price: number;
-    //     image: string;
-    //     type: string;
-    //     color?: string;
-    //     brand?: string;
-    //     sale?: number;
-    //     gender?: string;
-    // }[];
     export let data: { products: any[] };
 
     const products = data.products;
@@ -48,7 +37,7 @@
             if (result.success) {
                 alert('Product deleted successfully.');
                 selectedItem = null;
-                location.reload(); // Reload stránku na načítanie aktualizovaných produktov
+                location.reload();
             } else {
                 alert('Failed to delete product. Please try again.');
             }
@@ -66,17 +55,17 @@
 <main class="admin-page">
     <div class="products-grid">
         {#each products as product}
-            <a
+            <div
                     class="product-wrapper {selectedItem === product ? 'selected' : ''}"
                     role="button"
                     tabindex="0"
                     onkeydown={(e) => e.key === 'Enter' && selectItem(product)}
                     onclick={() => selectItem(product)}
-                    href="#"
             >
                 <Product {product} isAdminPage={true} />
-            </a>
+            </div>
         {/each}
+
     </div>
     <div class="admin-actions">
         <button class="action-button add" onclick={addProduct}>Add</button>
@@ -102,8 +91,8 @@
         position: relative;
         border-radius: 8px;
         overflow: hidden;
-        text-decoration: none; /* Odstránenie podčiarkovania */
-        color: inherit; /* Zachovanie aktuálnej farby textu */
+        text-decoration: none;
+        color: inherit;
     }
 
     .product-wrapper:hover {
@@ -115,6 +104,12 @@
         justify-content: center;
         gap: 1rem;
         margin-top: 2rem;
+    }
+
+    .product-wrapper.selected {
+        outline: 2px solid #2196f3;
+        box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        transform: scale(1.05);
     }
 
     .action-button {
