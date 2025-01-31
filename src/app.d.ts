@@ -2,7 +2,6 @@
 // for information about these interfaces
 declare global {
 	namespace App {
-		// interface Error {}
 		interface Locals {
 			user: {
 				id: string;
@@ -10,10 +9,22 @@ declare global {
 				role: string;
 			} | null;
 		}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
+
+		interface PageData {
+			product?: ProductData;
+		}
 	}
 }
 
 export {};
+// export interface ProductData {
+// 	id: string;
+// 	name: string;
+// 	price: number;
+// 	image: string;
+// 	type: string;
+// 	gender?: string;
+// 	color?: string;
+// 	brand?: string;
+// 	sale?: number;
+// }

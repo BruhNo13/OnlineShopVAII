@@ -1,34 +1,30 @@
-import { redirect } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-    if (!locals.user || locals.user.role !== 'admin') {
-        throw redirect(303, '/');
-    }
-
+export const load: PageServerLoad = async (): Promise<{ products: any[] }> => {
+    console.log('Loading products...');
     try {
-        const { data: products, error } = await supabase
+        const { data, error } = await supabase
             .from('Products')
-            .select('id, name, price, image, type, color, brand, sale, gender');
+            .select('id, name, image, price, type, color, brand, sale, gender');
 
         if (error) {
-            console.error('Error loading products:', error.message);
+            console.error('Error fetching products from Supabase:', error.message);
             return { products: [] };
         }
 
-        const urls = products.map((product) => {
+        const urls = data.map((product) => {
             const { data } = supabase.storage.from('images').getPublicUrl(product.image);
             return { id: product.id, image: data.publicUrl || '/images/default-image.jpg' };
         });
 
-        const updatedProducts = products.map((product) => {
-            const imageUrl = urls.find((url) => url.id === product.id)?.image || '/images/default-image.jpg';
+        const products = data.map((product) => {
+            const urlObj = urls.find((url) => url.id === product.id);
             return {
                 id: product.id,
                 name: product.name,
+                image: urlObj?.image || '/images/default-image.jpg',
                 price: product.price,
-                image: imageUrl,
                 type: product.type,
                 color: product.color,
                 brand: product.brand,
@@ -37,7 +33,8 @@ export const load: PageServerLoad = async ({ locals }) => {
             };
         });
 
-        return { products: updatedProducts };
+        console.log('Returning products to client:', products);
+        return { products };
     } catch (err) {
         console.error('Unexpected error:', err);
         return { products: [] };

@@ -1,38 +1,23 @@
 <script lang="ts">
     import Product from "../components/Product.svelte";
 
-    interface ProductInterface {
-        id: string;
-        name: string;
-        image: string;
-        price: number;
-    }
+    // export let products: {
+    //     id: string;
+    //     name: string;
+    //     price: number;
+    //     image: string;
+    //     type: string;
+    //     gender?: string;
+    //     color?: string;
+    //     brand?: string;
+    //     sale?: number;
+    // }[];
 
-    let products: ProductInterface[] = [];
+    export let data: { products: any[] };
 
-    async function loadProducts() {
-        try {
-            const response = await fetch('/api/products', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+    const products = data.products;
 
-            if (!response.ok) {
-                console.error('Failed to fetch products:', response.statusText);
-                return;
-            }
-
-            const data = await response.json();
-            products = data.products;
-            console.log('Products loaded successfully:', products);
-        } catch (error) {
-            console.error('Error loading products:', error);
-        }
-    }
-
-    loadProducts();
+    console.log("Products received:", products);
 </script>
 
 <section class="hero">
@@ -42,11 +27,17 @@
     </div>
 </section>
 
-<div class="products-grid">
-    {#each products as product}
-        <Product id={product.id} />
-    {/each}
-</div>
+{#if products && products.length > 0}
+    <div class="products-grid">
+        {#each products as product (product.id)}
+            <Product {product} />
+        {/each}
+    </div>
+{:else}
+    <div class="no-products">
+        <p>No products available.</p>
+    </div>
+{/if}
 
 <style>
     .hero {
@@ -153,30 +144,4 @@
     .product-card a:hover {
         background-color: #e64a19;
     }
-
-    body {
-        font-family: 'Arial', sans-serif;
-        margin: 0;
-        padding: 0;
-        line-height: 1.6;
-        background-color: #fff;
-        color: #333;
-    }
-
-    h1, h2 {
-        font-family: 'Roboto', sans-serif;
-        margin-bottom: 1rem;
-    }
-
-    .products {
-        margin-top: 2rem;
-    }
-
-    .products h2 {
-        text-align: center;
-        font-size: 2rem;
-        margin-bottom: 2rem;
-        color: #ff5722;
-    }
 </style>
-

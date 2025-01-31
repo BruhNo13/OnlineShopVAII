@@ -1,42 +1,24 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import Product from "../../components/Product.svelte";
+    import Product from '../../components/Product.svelte';
 
-    interface ProductData {
-        id: string;
-        name: string;
-        price: number;
-        image: string;
-    }
+    // export let products: {
+    //     id: string;
+    //     name: string;
+    //     price: number;
+    //     image: string;
+    //     type: string;
+    //     color?: string;
+    //     brand?: string;
+    //     sale?: number;
+    //     gender?: string;
+    // }[];
+    export let data: { products: any[] };
 
-    let products: ProductData[] = [];
-    let selectedItem: ProductData | null = null;
-
-    onMount(() => {
-        fetchProducts();
-    });
-
-    async function fetchProducts() {
-        try {
-            const response = await fetch('/api/products', {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                products = result.products;
-            } else {
-                console.error('Error fetching products:', result.message);
-            }
-        } catch (err) {
-            console.error('Unexpected error fetching products:', err);
-        }
-    }
+    const products = data.products;
+    let selectedItem: typeof products[0] | null = null;
 
     function addProduct() {
-        window.location.href = "/admin/addProduct";
+        window.location.href = '/admin/addProduct';
     }
 
     function editProduct() {
@@ -47,46 +29,36 @@
 
     async function deleteProduct() {
         if (!selectedItem) {
-            alert("No product selected.");
+            alert('No product selected.');
             return;
         }
 
-        const productToDelete = selectedItem;
-
-        const confirmDelete = window.confirm(
-            `Are you sure you want to delete the product "${productToDelete.name}"?`
-        );
+        const confirmDelete = window.confirm(`Are you sure you want to delete the product "${selectedItem.name}"?`);
         if (!confirmDelete) return;
 
         try {
-            console.log('Deleting product with ID:', productToDelete.id);
-
             const response = await fetch('/api/products', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: productToDelete.id }),
+                body: JSON.stringify({ id: selectedItem.id }),
             });
 
             const result = await response.json();
 
-            if (!result.success) {
+            if (result.success) {
+                alert('Product deleted successfully.');
+                selectedItem = null;
+                location.reload(); // Reload stránku na načítanie aktualizovaných produktov
+            } else {
                 alert('Failed to delete product. Please try again.');
-                return;
             }
-
-            alert('Product deleted successfully.');
-            selectedItem = null;
-
-            window.location.reload();
         } catch (err) {
             console.error('Unexpected error deleting product:', err);
             alert('An unexpected error occurred. Please try again.');
         }
     }
 
-
-
-    function selectItem(product: ProductData) {
+    function selectItem(product: typeof products[0]) {
         selectedItem = selectedItem === product ? null : product;
     }
 </script>
@@ -94,27 +66,22 @@
 <main class="admin-page">
     <div class="products-grid">
         {#each products as product}
-            <div class="product-wrapper {selectedItem === product ? 'selected' : ''}" onclick={() => selectItem(product)}>
-                <Product id={product.id} />
-            </div>
+            <a
+                    class="product-wrapper {selectedItem === product ? 'selected' : ''}"
+                    role="button"
+                    tabindex="0"
+                    onkeydown={(e) => e.key === 'Enter' && selectItem(product)}
+                    onclick={() => selectItem(product)}
+                    href="#"
+            >
+                <Product {product} isAdminPage={true} />
+            </a>
         {/each}
     </div>
     <div class="admin-actions">
         <button class="action-button add" onclick={addProduct}>Add</button>
-        <button
-                class="action-button edit"
-                onclick={editProduct}
-                disabled={!selectedItem}
-        >
-            Edit
-        </button>
-        <button
-                class="action-button delete"
-                onclick={deleteProduct}
-                disabled={!selectedItem}
-        >
-            Delete
-        </button>
+        <button class="action-button edit" onclick={editProduct} disabled={!selectedItem}>Edit</button>
+        <button class="action-button delete" onclick={deleteProduct} disabled={!selectedItem}>Delete</button>
     </div>
 </main>
 
@@ -135,9 +102,11 @@
         position: relative;
         border-radius: 8px;
         overflow: hidden;
+        text-decoration: none; /* Odstránenie podčiarkovania */
+        color: inherit; /* Zachovanie aktuálnej farby textu */
     }
 
-    .product-wrapper.selected {
+    .product-wrapper:hover {
         outline: 2px solid #ff5722;
     }
 
@@ -190,3 +159,4 @@
         cursor: not-allowed;
     }
 </style>
+
