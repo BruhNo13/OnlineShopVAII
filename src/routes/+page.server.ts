@@ -1,40 +1,50 @@
 import { supabase } from '$lib/supabase';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async (): Promise<{ products: any[] }> => {
-    console.log('Loading products...');
+export const load: PageServerLoad = async ({ locals }): Promise<{ products: any[] }> => {
     try {
-        const { data, error } = await supabase
+        // Načítanie všetkých produktov
+        const { data: products, error: productsError } = await supabase
             .from('Products')
             .select('id, name, image, price, type, color, brand, sale, gender');
 
-        if (error) {
-            console.error('Error fetching products from Supabase:', error.message);
+        if (productsError) {
+            console.error('Error fetching products from Supabase:', productsError.message);
             return { products: [] };
         }
 
-        const urls = data.map((product) => {
+        // Načítanie URL obrázkov pre produkty
+        const productsWithImages = products.map((product) => {
             const { data } = supabase.storage.from('images').getPublicUrl(product.image);
-            return { id: product.id, image: data.publicUrl || '/images/default-image.jpg' };
-        });
-
-        const products = data.map((product) => {
-            const urlObj = urls.find((url) => url.id === product.id);
             return {
-                id: product.id,
-                name: product.name,
-                image: urlObj?.image || '/images/default-image.jpg',
-                price: product.price,
-                type: product.type,
-                color: product.color,
-                brand: product.brand,
-                sale: product.sale,
-                gender: product.gender,
+                ...product,
+                image: data.publicUrl || '/images/default-image.jpg',
             };
         });
 
-        // console.log('Returning products to client:', products);
-        return { products };
+        let favoriteProducts: string[] = [];
+
+        if (locals.user) {
+            // Načítanie obľúbených produktov pre prihláseného používateľa
+            const { data: favorites, error: favoritesError } = await supabase
+                .from('Favorites')
+                .select('product_id')
+                .eq('user_id', locals.user.id);
+
+            if (favoritesError) {
+                console.error('Error fetching favorite products:', favoritesError.message);
+            } else {
+                favoriteProducts = favorites.map((fav) => fav.product_id);
+            }
+        }
+
+        // Pridanie isFavorite k produktom
+        const finalProducts = productsWithImages.map((product) => ({
+            ...product,
+            isFavorite: favoriteProducts.includes(product.id),
+        }));
+
+        return { products: finalProducts };
     } catch (err) {
         console.error('Unexpected error:', err);
         return { products: [] };

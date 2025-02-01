@@ -1,23 +1,9 @@
 <script lang="ts">
     import Product from "../components/Product.svelte";
 
-    // export let products: {
-    //     id: string;
-    //     name: string;
-    //     price: number;
-    //     image: string;
-    //     type: string;
-    //     gender?: string;
-    //     color?: string;
-    //     brand?: string;
-    //     sale?: number;
-    // }[];
-
     export let data: { products: any[] };
 
     const products = data.products;
-
-    console.log("Products received:", products);
 </script>
 
 <section class="hero">
@@ -30,7 +16,7 @@
 {#if products && products.length > 0}
     <div class="products-grid">
         {#each products as product (product.id)}
-            <Product {product} />
+            <Product {product} isFavorite={product.isFavorite} />
         {/each}
     </div>
 {:else}
@@ -38,6 +24,7 @@
         <p>No products available.</p>
     </div>
 {/if}
+
 
 <style>
     .hero {
@@ -95,21 +82,21 @@
         background-color: #f9f9f9;
     }
 
-    .product-card {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 12px;
-        padding: 1.5rem;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
+    /*.product-card {*/
+    /*    background: white;*/
+    /*    border: 1px solid #ddd;*/
+    /*    border-radius: 12px;*/
+    /*    padding: 1.5rem;*/
+    /*    text-align: center;*/
+    /*    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
+    /*    transition: transform 0.3s, box-shadow 0.3s;*/
+    /*}*/
 
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        border-color: #ff5722;
-    }
+    /*.product-card:hover {*/
+    /*    transform: translateY(-5px);*/
+    /*    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);*/
+    /*    border-color: #ff5722;*/
+    /*}*/
 
     .product-card img {
         max-width: 100%;

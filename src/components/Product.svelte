@@ -1,26 +1,53 @@
 <script lang="ts">
+    import { goto } from '$app/navigation';
+
     export let product: {
         id: string;
         name: string;
         price: number;
         image: string;
         type: string;
-        gender?: string;
         color?: string;
         brand?: string;
         sale?: number;
     };
-    export let isAdminPage: boolean = false;
+    export let isFavorite: boolean;
+
+    async function toggleFavorite() {
+        try {
+            const response = await fetch(`/api/favorites`, {
+                method: isFavorite ? 'DELETE' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId: product.id }),
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                isFavorite = !isFavorite;
+            } else {
+                alert('Nepodarilo sa aktualizovať obľúbené produkty. Skúste znova.');
+            }
+        } catch (error) {
+            console.error('Chyba pri aktualizácii obľúbených produktov:', error);
+        }
+    }
 </script>
 
 <div class="product-card">
-    {#if !isAdminPage}
-        <a href={`/product/${product.id}`}>
-            <img src={product.image} alt={product.name} class="product-image" />
-        </a>
-    {:else}
+    <button class="favorite-button" on:click={toggleFavorite}>
+        {#if isFavorite}
+            ❤️
+        {:else}
+            🤍
+        {/if}
+    </button>
+
+    <a href={`/product/${product.id}`}>
         <img src={product.image} alt={product.name} class="product-image" />
-    {/if}
+    </a>
+
     <h2 class="product-name">{product.name}</h2>
     <p class="product-price">{product.price.toFixed(2)} €</p>
 </div>
@@ -38,6 +65,7 @@
         transition: transform 0.3s, box-shadow 0.3s;
         background-color: #fff;
         cursor: pointer;
+        position: relative;
     }
 
     .product-card:hover {
@@ -62,5 +90,23 @@
         color: #ff5722;
         font-weight: bold;
         margin-top: 0.5rem;
+    }
+
+    .favorite-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.5rem;
+    }
+
+    .favorite-button:hover {
+        transform: scale(1.1);
+    }
+
+    .favorite-button:focus {
+        outline: none;
     }
 </style>

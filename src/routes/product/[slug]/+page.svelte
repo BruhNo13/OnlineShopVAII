@@ -1,18 +1,6 @@
 <script lang="ts">
+    import { goto } from '$app/navigation';
     import { page } from '$app/stores';
-
-    // type Product = {
-    //     id: string;
-    //     name: string;
-    //     price: number;
-    //     image: string;
-    //     type: string;
-    //     sizes: { size: number; quantity: number }[];
-    //     color: string;
-    //     brand: string;
-    //     sale: number;
-    //     gender: string;
-    // };
 
     export let ProductData = $page.data;
 
@@ -27,6 +15,27 @@
         }
 
         alert(`Produkt ${product.name} vo veľkosti ${selectedSize} bol pridaný do košíka.`);
+    }
+
+    async function addToFavorites() {
+        try {
+            const response = await fetch('/api/favorites', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId: product.id }),
+            });
+
+            if (response.ok) {
+                alert(`Produkt ${product.name} bol pridaný do obľúbených.`);
+            } else {
+                alert('Nepodarilo sa pridať produkt do obľúbených.');
+            }
+        } catch (error) {
+            console.error('Chyba pri pridávaní produktu do obľúbených:', error);
+            alert('Nepodarilo sa pridať produkt do obľúbených.');
+        }
     }
 </script>
 
@@ -64,9 +73,14 @@
                 <p><strong>Brand:</strong> {product.brand}</p>
             </div>
 
-            <button class="add-to-cart" on:click={addToCart} disabled={!selectedSize}>
-                Add to cart
-            </button>
+            <div class="button-group">
+                <button class="add-to-cart" on:click={addToCart} disabled={!selectedSize}>
+                    Add to Cart
+                </button>
+                <button class="add-to-favorites" on:click={addToFavorites}>
+                    Add to Favorites ❤️
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -165,9 +179,16 @@
         color: #555;
     }
 
-    .add-to-cart {
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .add-to-cart,
+    .add-to-favorites {
         display: block;
-        width: 100%;
+        flex: 1;
         background-color: #007bff;
         color: white;
         padding: 0.8rem 1rem;
@@ -180,9 +201,18 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
-    .add-to-cart:hover {
+    .add-to-cart:hover,
+    .add-to-favorites:hover {
         background-color: #0056b3;
         transform: translateY(-2px);
+    }
+
+    .add-to-favorites {
+        background-color: #ff4081;
+    }
+
+    .add-to-favorites:hover {
+        background-color: #c60055;
     }
 
     select {
@@ -213,9 +243,9 @@
             padding: 0;
         }
 
-        .add-to-cart {
+        .add-to-cart,
+        .add-to-favorites {
             font-size: 1rem;
         }
     }
 </style>
-

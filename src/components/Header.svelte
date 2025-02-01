@@ -1,4 +1,6 @@
 <script lang="ts">
+    import {goto} from "$app/navigation";
+
     export let userDetails: { user: string | null; role: string | null };
 
     let userName = userDetails.user;
@@ -17,7 +19,8 @@
             if (response.ok) {
                 userName = null;
                 role = null;
-                window.location.reload();
+                // window.location.reload();
+                await goto('/');
             } else {
                 console.error('Failed to log out.');
             }
@@ -74,20 +77,19 @@
                 <button class="search-button">Search</button>
             </div>
             {#if userName}
-                <a
-                        href={role === 'admin' || role === 'manager' ? '/admin' : '/user'}
-                        class="nav-right-link">
-                    {userName}
-                </a>
-                <button on:click={logOut} class="nav-right-link">Log out</button>
+                <div class="user-container">
+                    {#if role === 'admin' || role === 'manager'}
+                        <a href="/admin" class="admin-link">ADMIN</a>
+                    {/if}
+                    <a href="/profile" class="nav-right-link">{userName}</a>
+                    <button on:click={logOut} class="nav-right-link">Log out</button>
+                </div>
             {:else}
                 <a href="/login" class="nav-right-link">Log in</a>
             {/if}
-
             <a href="/favourites" class="nav-right-link">Favourites</a>
             <a href="/cart" class="nav-right-link">My Cart</a>
         </div>
-
     </nav>
 </header>
 
@@ -208,6 +210,22 @@
     }
 
     .nav-right-link:hover {
+        text-decoration: underline;
+    }
+
+    .user-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .admin-link {
+        font-weight: bold;
+        color: #ff5722;
+        text-decoration: none;
+    }
+
+    .admin-link:hover {
         text-decoration: underline;
     }
 </style>
