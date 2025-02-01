@@ -8,13 +8,34 @@
 
     let selectedSize: number | null = null;
 
-    function addToCart() {
+    let quantity = 1;
+    async function addToCart() {
         if (!selectedSize) {
             alert('Prosím, vyberte veľkosť.');
             return;
         }
 
-        alert(`Produkt ${product.name} vo veľkosti ${selectedSize} bol pridaný do košíka.`);
+        try {
+            const response = await fetch('/api/cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    productId: product.id,
+                    size: selectedSize,
+                    quantity
+                }),
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(`Produkt ${product.name} vo veľkosti ${selectedSize} bol pridaný do košíka.`);
+            } else {
+                alert('Nepodarilo sa pridať produkt do košíka.');
+            }
+        } catch (err) {
+            console.error('Chyba pri pridávaní do košíka:', err);
+            alert('Vyskytla sa chyba. Skúste znova.');
+        }
     }
 
     async function addToFavorites() {
@@ -78,7 +99,7 @@
                     Add to Cart
                 </button>
                 <button class="add-to-favorites" on:click={addToFavorites}>
-                    Add to Favorites ❤️
+                    Add to Favorites
                 </button>
             </div>
         </div>
