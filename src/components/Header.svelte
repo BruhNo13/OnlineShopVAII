@@ -61,7 +61,6 @@
                 <li><a href="/filter?category=shoes">SHOES</a></li>
                 <li><a href="/filter?category=clothing">CLOTHING</a></li>
                 <li><a href="/filter?category=accessories">ACCESSORIES</a></li>
-                <li><a href="/filter?category=sales">SALES</a></li>
             </ul>
         </div>
 
@@ -81,7 +80,7 @@
             {:else}
                 <a href="/login" class="nav-right-link">Log in</a>
             {/if}
-            <a href="/favourites" class="nav-right-link">Favourites</a>
+            <a href="/favorites" class="nav-right-link">Favourites</a>
             <a href="/cart" class="nav-right-link">My Cart</a>
         </div>
     </nav>

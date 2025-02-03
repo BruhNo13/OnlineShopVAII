@@ -2,31 +2,41 @@ import type { LayoutServerLoad } from './$types';
 import { supabase } from '$lib/supabase';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-    try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+    const { data: { session }, error } = await supabase.auth.getSession();
 
-        if (error || !session) {
-            console.log('No active session found.');
-            return { user: null, role: null };
-        }
-
-        const { data: user, error: userError } = await supabase
-            .from('users')
-            .select('name, role')
-            .eq('id', session.user.id)
-            .single();
-
-        if (userError || !user) {
-            console.error('User not found in the database.');
-            return { user: null, role: null };
-        }
-
+    if (error || !session) {
+        console.log('No active session found.');
         return {
-            user: user.name,
-            role: user.role,
+            user: null,
+            role: null,
+            surname: null,
+            email: null,
+            gender: null
         };
-    } catch (err) {
-        console.error('Unexpected error in +layout.server.ts:', err);
-        return { user: null, role: null };
     }
+
+    const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('name, role, surname, email, gender')
+        .eq('id', session.user.id)
+        .single();
+
+    if (userError || !user) {
+        console.error('User not found in the database.');
+        return {
+            user: null,
+            role: null,
+            surname: null,
+            email: null,
+            gender: null
+        };
+    }
+
+    return {
+        user: user.name,
+        role: user.role,
+        surname: user.surname,
+        email: user.email,
+        gender: user.gender,
+    };
 };
