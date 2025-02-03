@@ -59,6 +59,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: space-between;
         border: 1px solid #ddd;
         border-radius: 8px;
         padding: 1rem;
@@ -66,6 +67,8 @@
         background-color: #fff;
         cursor: pointer;
         position: relative;
+        width: 200px;
+        height: 300px;
     }
 
     .product-card:hover {
@@ -75,21 +78,24 @@
 
     .product-image {
         width: 100%;
-        height: auto;
-        object-fit: cover;
+        height: 150px;
+        object-fit: contain;
+        margin-bottom: 0.5rem;
     }
 
     .product-name {
         font-size: 1.2rem;
         font-weight: bold;
         color: #333;
+        text-align: center;
+        margin: 0.5rem 0;
     }
 
     .product-price {
         font-size: 1rem;
         color: #ff5722;
         font-weight: bold;
-        margin-top: 0.5rem;
+        margin-top: auto;
     }
 
     .favorite-button {
@@ -100,6 +106,7 @@
         border: none;
         cursor: pointer;
         font-size: 1.5rem;
+        transition: transform 0.2s;
     }
 
     .favorite-button:hover {
@@ -109,4 +116,5 @@
     .favorite-button:focus {
         outline: none;
     }
+
 </style>

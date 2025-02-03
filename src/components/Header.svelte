@@ -34,43 +34,37 @@
             <a href="/" class="logo">FakeFoot</a>
             <ul class="nav-links">
                 <li class="dropdown">
-                    <a href="/men" class="dropdown-toggle">MEN</a>
+                    <a href="/filter?gender=male" class="dropdown-toggle">MEN</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/men/t-shirts">T-Shirts</a></li>
-                        <li><a href="/men/hoodies">Hoodies</a></li>
-                        <li><a href="/men/jackets-and-coats">Jackets and Coats</a></li>
-                        <li><a href="/men/pants">Pants</a></li>
-                        <li><a href="/men/shoes">Shoes</a></li>
+                        <li><a href="/filter?gender=male&category=clothing">Clothing</a></li>
+                        <li><a href="/filter?gender=male&category=shoes">Shoes</a></li>
+                        <li><a href="/filter?gender=male&category=accessories">Accessories</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="/women" class="dropdown-toggle">WOMEN</a>
+                    <a href="/filter?gender=female" class="dropdown-toggle">WOMEN</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/women/t-shirts">T-Shirts</a></li>
-                        <li><a href="/women/hoodies">Hoodies</a></li>
-                        <li><a href="/women/jackets-and-coats">Jackets and Coats</a></li>
-                        <li><a href="/women/pants">Pants</a></li>
-                        <li><a href="/women/shoes">Shoes</a></li>
+                        <li><a href="/filter?gender=female&category=clothing">Clothing</a></li>
+                        <li><a href="/filter?gender=female&category=shoes">Shoes</a></li>
+                        <li><a href="/filter?gender=female&category=accessories">Accessories</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="/kids" class="dropdown-toggle">KIDS</a>
+                    <a href="/filter?gender=other" class="dropdown-toggle">KIDS</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/kids/t-shirts">T-Shirts</a></li>
-                        <li><a href="/kids/hoodies">Hoodies</a></li>
-                        <li><a href="/kids/jackets-and-coats">Jackets and Coats</a></li>
-                        <li><a href="/kids/pants">Pants</a></li>
-                        <li><a href="/kids/shoes">Shoes</a></li>
+                        <li><a href="/filter?gender=other&category=clothing">Clothing</a></li>
+                        <li><a href="/filter?gender=other&category=shoes">Shoes</a></li>
+                        <li><a href="/filter?gender=other&category=accessories">Accessories</a></li>
                     </ul>
                 </li>
 
-                <li><a href="/shoes">SHOES</a></li>
-                <li><a href="/clothing">CLOTHING</a></li>
-                <li><a href="/accessories">ACCESSORIES</a></li>
-                <li><a href="/brands">BRANDS</a></li>
-                <li><a href="/sales">SALES</a></li>
+                <li><a href="/filter?category=shoes">SHOES</a></li>
+                <li><a href="/filter?category=clothing">CLOTHING</a></li>
+                <li><a href="/filter?category=accessories">ACCESSORIES</a></li>
+                <li><a href="/filter?category=sales">SALES</a></li>
             </ul>
         </div>
+
         <div class="nav-right">
             <div class="search-container">
                 <input type="text" class="search-bar" placeholder="Search..." />
