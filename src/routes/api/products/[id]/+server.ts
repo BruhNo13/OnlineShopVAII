@@ -1,24 +1,26 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
 
-export const GET = async ({ params }) => {
+export async function GET({ params }) {
     const { id } = params;
 
-    try {
-        const { data, error } = await supabase
-            .from('Products')
-            .select('*')
-            .eq('id', id)
-            .single();
+    const { data: product, error } = await supabase
+        .from('Products')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-        if (error) {
-            console.error('Error fetching product:', error.message);
-            return json({ error: 'Product not found' }, { status: 404 });
-        }
-
-        return json({ product: data });
-    } catch (error) {
-        console.error('Unexpected error:', error);
-        return json({ error: 'Internal server error' }, { status: 500 });
+    if (error) {
+        console.error('Error fetching product details:', error.message);
+        return json({ success: false, message: 'Failed to fetch product details' }, { status: 500 });
     }
-};
+
+    if (product.image) {
+        const { data } = supabase.storage.from('images').getPublicUrl(product.image);
+        product.image = data?.publicUrl || '/images/default-image.jpg';
+    } else {
+        product.image = '/images/default-image.jpg';
+    }
+
+    return json(product);
+}

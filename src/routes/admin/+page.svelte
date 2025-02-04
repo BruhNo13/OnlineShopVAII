@@ -62,7 +62,7 @@
                     onkeydown={(e) => e.key === 'Enter' && selectItem(product)}
                     onclick={() => selectItem(product)}
             >
-                <Product {product} isAdminPage={true} />
+                <Product {product} isAdminPage={true} isFavorite={false} />
             </div>
         {/each}
 
@@ -102,6 +102,12 @@
         overflow: hidden;
         text-decoration: none;
         color: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        box-sizing: border-box;
     }
 
     .product-wrapper:hover {
@@ -115,10 +121,11 @@
         margin-top: 2rem;
     }
 
-    .product-wrapper.selected {
-        outline: 2px solid #2196f3;
-        box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+    .product-wrapper {
+        outline: 3px solid #2196f3;
+        box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
         transform: scale(1.05);
+        transition: transform 0.2s, outline 0.2s;
     }
 
     .action-button {

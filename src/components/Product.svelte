@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { goto } from '$app/navigation';
 
     export let product: {
         id: string;
@@ -12,6 +11,7 @@
         sale?: number;
     };
     export let isFavorite: boolean;
+    export let isAdminPage: boolean = false;
 
     async function toggleFavorite() {
         try {
@@ -44,9 +44,15 @@
         {/if}
     </button>
 
-    <a href={`/product/${product.id}`}>
-        <img src={product.image} alt={product.name} class="product-image" />
-    </a>
+    {#if isAdminPage}
+        <div>
+            <img src={product.image} alt={product.name} class="product-image" />
+        </div>
+    {:else}
+        <a href={`/product/${product.id}`}>
+            <img src={product.image} alt={product.name} class="product-image" />
+        </a>
+    {/if}
 
     <h2 class="product-name">{product.name}</h2>
     <p class="product-price">{product.price.toFixed(2)} €</p>

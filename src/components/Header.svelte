@@ -19,8 +19,8 @@
             if (response.ok) {
                 userName = null;
                 role = null;
-                // window.location.reload();
                 await goto('/');
+                window.location.reload();
             } else {
                 console.error('Failed to log out.');
             }

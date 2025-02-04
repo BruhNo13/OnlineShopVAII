@@ -2,14 +2,12 @@
     import { onMount } from 'svelte';
     import { page } from '$app/stores';
 
-    // ✅ Načítanie používateľských údajov priamo zo serverom predpripravených dát
     $: user = $page.data.user;
     $: surname = $page.data.surname;
     $: email = $page.data.email;
     $: gender = $page.data.gender;
     $: role = $page.data.role;
 
-    // ✅ Tieto údaje nevieme načítať zo `+layout.server.ts`, takže ich musíme získať asynchrónne
     let favoritesCount = 0;
     let cartCount = 0;
     let ordersCount = 0;
@@ -25,7 +23,7 @@
             });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch profile statistics');
+                Error('Failed to fetch profile statistics');
             }
 
             const data = await response.json();
@@ -38,7 +36,6 @@
         }
     }
 
-    // ✅ Spustíme len dotaz na štatistiky, lebo ostatné údaje už máme
     onMount(() => {
         fetchProfileStats();
     });
@@ -58,7 +55,7 @@
             <ul>
                 <li><a href="/favorites">Favorites: {favoritesCount} products</a></li>
                 <li><a href="/cart">Cart: {cartCount} products</a></li>
-                <li><a href="/orders">Orders: {ordersCount} active</a></li>
+                <li><a href="/orders/userOrders">Orders: {ordersCount} active</a></li>
                 <li><a href="/reviews">Reviews: {reviewsCount} written</a></li>
             </ul>
         </section>

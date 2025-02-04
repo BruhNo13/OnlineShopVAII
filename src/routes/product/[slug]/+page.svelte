@@ -1,40 +1,51 @@
 <script lang="ts">
-    import { goto } from '$app/navigation';
     import { page } from '$app/stores';
 
     export let ProductData = $page.data;
 
     const product = ProductData.product;
+    const reviews = product.reviews || [];
+
+    // interface Review {
+    //     id: string;
+    //     rating: number;
+    //     comment: string;
+    //     created_at: string;
+    //     user_name: string | null;
+    // }
 
     let selectedSize: number | null = null;
-
     let quantity = 1;
+    let newReview: { rating: number; comment: string } = { rating: 0, comment: '' };
+
+    let isSubmitting = false;
+
     async function addToCart() {
         if (!selectedSize) {
-            alert('Prosím, vyberte veľkosť.');
+            alert('Please select a size.');
             return;
         }
 
         try {
-            const response = await fetch('/api/cart', {
+            const response = await fetch('/api/cart/product', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     productId: product.id,
                     size: selectedSize,
-                    quantity
+                    quantity,
                 }),
             });
 
             const result = await response.json();
             if (result.success) {
-                alert(`Produkt ${product.name} vo veľkosti ${selectedSize} bol pridaný do košíka.`);
+                alert(`Product ${product.name} in size ${selectedSize} has been added to your cart.`);
             } else {
-                alert('Nepodarilo sa pridať produkt do košíka.');
+                alert('Failed to add product to cart.');
             }
         } catch (err) {
-            console.error('Chyba pri pridávaní do košíka:', err);
-            alert('Vyskytla sa chyba. Skúste znova.');
+            console.error('Error adding to cart:', err);
+            alert('An error occurred. Please try again.');
         }
     }
 
@@ -49,13 +60,41 @@
             });
 
             if (response.ok) {
-                alert(`Produkt ${product.name} bol pridaný do obľúbených.`);
+                alert(`Product ${product.name} has been added to favorites.`);
             } else {
-                alert('Nepodarilo sa pridať produkt do obľúbených.');
+                alert('Failed to add product to favorites.');
             }
         } catch (error) {
-            console.error('Chyba pri pridávaní produktu do obľúbených:', error);
-            alert('Nepodarilo sa pridať produkt do obľúbených.');
+            console.error('Error adding to favorites:', error);
+            alert('Failed to add product to favorites.');
+        }
+    }
+
+    async function addReview() {
+        if (!newReview.comment.trim() || newReview.rating < 0 || newReview.rating > 5) {
+            alert('Please provide a valid rating (0-5) and comment.');
+            return;
+        }
+
+        isSubmitting = true;
+
+        try {
+            const response = await fetch(`/api/products/${product.id}/reviews`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newReview),
+            });
+
+            if (!response.ok) throw new Error('Failed to add review.');
+
+            const createdReview = await response.json();
+            reviews.unshift(createdReview);
+            newReview = { rating: 0, comment: '' };
+        } catch (err: any) {
+            console.error('Error adding review:', err.message);
+            alert('Failed to submit the review. Please try again.');
+        } finally {
+            isSubmitting = false;
         }
     }
 </script>
@@ -75,10 +114,7 @@
             <p class="product-type">{product.type}</p>
 
             <div class="price-section">
-                <p class="product-price">{product.price.toFixed(2)} &euro;</p>
-                {#if product.sale > 0}
-                    <p class="product-sale">Sale: -{product.sale}%</p>
-                {/if}
+                <p class="product-price">{product.price.toFixed(2)} €</p>
             </div>
 
             <div class="attributes">
@@ -104,9 +140,82 @@
             </div>
         </div>
     </div>
+
+    <div class="reviews-section">
+        <h2>Reviews</h2>
+        <div class="add-review">
+            <h3>Add a Review</h3>
+            <form on:submit|preventDefault={addReview}>
+                <label>
+                    Rating:
+                    <input type="number" min="0" max="5" step="1" bind:value={newReview.rating} />
+                </label>
+                <label>
+                    Comment:
+                    <textarea bind:value={newReview.comment} rows="3"></textarea>
+                </label>
+                <button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Submitting...' : 'Submit'}
+                </button>
+            </form>
+        </div>
+
+        <div class="reviews-list">
+            {#each reviews as review}
+                <div class="review-card">
+                    <p>
+                        <strong>{review.user_name || 'Anonymous'}</strong> -
+                        {new Date(review.created_at).toLocaleDateString()}
+                    </p>
+                    <p>Rating: <strong>{review.rating}/5</strong></p>
+                    <p>{review.comment}</p>
+                </div>
+            {/each}
+        </div>
+    </div>
 </div>
 
 <style>
+    .reviews-section {
+        margin-top: 2rem;
+        background: #f9f9f9;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .reviews-section h2 {
+        margin-bottom: 1rem;
+        color: #333;
+        font-size: 1.5rem;
+        text-align: center;
+    }
+
+
+    .reviews-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+
+    .add-review {
+        margin-top: 2rem;
+    }
+
+    .add-review h3 {
+        font-size: 1.2rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+
+    .form-group label {
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
     .product-page {
         flex: 1;
         display: flex;
@@ -185,15 +294,6 @@
         color: #ff5722;
     }
 
-    .product-sale {
-        font-size: 1.2rem;
-        color: #e64a19;
-        font-weight: bold;
-        background: #ffe5e5;
-        padding: 0.3rem 0.6rem;
-        border-radius: 8px;
-    }
-
     .attributes p {
         font-size: 1rem;
         margin: 0.5rem 0;
@@ -249,6 +349,38 @@
         border-color: #007bff;
         outline: none;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .review-card {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .review-card p {
+        margin: 0.5rem 0;
+    }
+
+    .review-card strong {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .review-card {
+        font-size: 1.1rem;
+        color: #ff5722;
+    }
+
+    .review-card {
+        color: #555;
     }
 
     @media (max-width: 768px) {
