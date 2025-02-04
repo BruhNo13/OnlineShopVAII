@@ -3,7 +3,7 @@ import { supabase } from '$lib/supabase';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-    if (!locals.user || locals.user.role !== 'admin') {
+    if (!locals.user || locals.user.role !== 'admin' && locals.user.role !== 'manager') {
         throw redirect(303, '/');
     }
 
@@ -37,7 +37,10 @@ export const load: PageServerLoad = async ({ locals }) => {
             };
         });
 
-        return { products: updatedProducts };
+        return {
+            products: updatedProducts,
+            userRole: locals.user.role
+        };
     } catch (err) {
         console.error('Unexpected error:', err);
         return { products: [] };

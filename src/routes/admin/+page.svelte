@@ -1,9 +1,10 @@
 <script lang="ts">
     import Product from '../../components/Product.svelte';
 
-    export let data: { products: any[] };
+    export let data: { products: any[], userRole: string };
 
     const products = data.products;
+    const userRole = data.userRole;
     let selectedItem: typeof products[0] | null = null;
 
     function addProduct() {
@@ -65,8 +66,8 @@
                 <Product {product} isAdminPage={true} isFavorite={false} />
             </div>
         {/each}
-
     </div>
+
     <div class="admin-actions">
         <button class="action-button add" onclick={addProduct}>Add</button>
         <button class="action-button edit" onclick={editProduct} disabled={!selectedItem}>Edit</button>
@@ -74,12 +75,16 @@
     </div>
 
     <div class="admin-side-buttons">
-        <button class="side-button orders" onclick={() => window.location.href = '/admin/orders'}>
-            Orders
-        </button>
-        <button class="side-button users" onclick={() => window.location.href = '/admin/users'}>
-            Users
-        </button>
+        {#if userRole === 'admin' || userRole === 'manager'}
+            <button class="side-button orders" onclick={() => window.location.href = '/orders/adminOrders'}>
+                Orders
+            </button>
+        {/if}
+        {#if userRole === 'admin'}
+            <button class="side-button users" onclick={() => window.location.href = '/admin/usersAdmin'}>
+                Users
+            </button>
+        {/if}
     </div>
 </main>
 
@@ -108,24 +113,25 @@
         justify-content: center;
         padding: 1rem;
         box-sizing: border-box;
+        transition: outline 0.2s, transform 0.2s;
     }
 
     .product-wrapper:hover {
         outline: 2px solid #ff5722;
     }
 
+    .product-wrapper {
+        outline: 3px solid #2196f3;
+        box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+        transform: scale(1.05);
+    }
+
+
     .admin-actions {
         display: flex;
         justify-content: center;
         gap: 1rem;
         margin-top: 2rem;
-    }
-
-    .product-wrapper {
-        outline: 3px solid #2196f3;
-        box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
-        transform: scale(1.05);
-        transition: transform 0.2s, outline 0.2s;
     }
 
     .action-button {

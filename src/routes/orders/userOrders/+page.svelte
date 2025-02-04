@@ -97,7 +97,7 @@
                             <OrderItem {item} />
                         {/each}
                     </div>
-                    {#if order.status !== 'canceled'}
+                    {#if order.status !== 'canceled' && order.status !== 'completed'}
                         <button class="cancel-button" on:click={() => cancelOrder(order.id)}>Cancel Order</button>
                     {/if}
                 </li>
