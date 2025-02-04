@@ -15,9 +15,9 @@
 
     async function fetchUsers() {
         isLoading = true;
-        try {
-            const response = await fetch('/api/users');
-            if (!response.ok) throw new Error('Failed to fetch users');
+
+        const response = await fetch('/api/users');
+        if (response.ok) {
             const data = await response.json();
             if (data.success) {
                 users = data.users;
@@ -25,33 +25,30 @@
             } else {
                 alert(data.message || 'Failed to fetch users');
             }
-        } catch (err: any) {
-            console.error('Error fetching users:', err.message);
-            alert('An error occurred while fetching users.');
-        } finally {
-            isLoading = false;
+        } else {
+            alert('Failed to fetch users');
         }
+
+        isLoading = false;
     }
 
-    async function updateUserRole(userId: string, role: string) {
-        try {
-            const response = await fetch('/api/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, role }),
-            });
 
-            if (!response.ok) throw new Error('Failed to update user role');
-            const data = await response.json();
-            if (data.success) {
-                const updatedUser = users.find(user => user.id === userId);
-                if (updatedUser) updatedUser.role = role;
-            } else {
-                alert('Failed to update user role');
-            }
-        } catch (err: any) {
-            console.error('Error updating user role:', err.message);
+    async function updateUserRole(userId: string, role: string) {
+        const response = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, role }),
+        });
+
+        if (!response.ok) new Error('Failed to update user role');
+        const data = await response.json();
+        if (data.success) {
+            const updatedUser = users.find(user => user.id === userId);
+            if (updatedUser) updatedUser.role = role;
+        } else {
+            alert('Failed to update user role');
         }
+
     }
 
     onMount(() => {
@@ -87,11 +84,19 @@
                         <td>{user.role}</td>
                         <td>
                             {#if user.id !== currentUserId}
-                                <select bind:value={user.role} on:change={(e) => updateUserRole(user.id, e.target.value)}>
+                                <select
+                                        bind:value={user.role}
+                                        on:change={(e) => {
+                                            if (e.target instanceof HTMLSelectElement) {
+                                                updateUserRole(user.id, e.target.value);
+                                            }
+                                        }}
+                                >
                                     <option value="admin">Admin</option>
                                     <option value="manager">Manager</option>
                                     <option value="user">User</option>
                                 </select>
+
                             {:else}
                                 <span>Cannot modify yourself</span>
                             {/if}

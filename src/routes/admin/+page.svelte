@@ -26,26 +26,22 @@
         const confirmDelete = window.confirm(`Are you sure you want to delete the product "${selectedItem.name}"?`);
         if (!confirmDelete) return;
 
-        try {
-            const response = await fetch('/api/products', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: selectedItem.id }),
-            });
+        const response = await fetch('/api/products', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selectedItem.id }),
+        });
 
-            const result = await response.json();
+        const result = await response.json();
 
-            if (result.success) {
-                alert('Product deleted successfully.');
-                selectedItem = null;
-                location.reload();
-            } else {
-                alert('Failed to delete product. Please try again.');
-            }
-        } catch (err) {
-            console.error('Unexpected error deleting product:', err);
-            alert('An unexpected error occurred. Please try again.');
+        if (result.success) {
+            alert('Product deleted successfully.');
+            selectedItem = null;
+            location.reload();
+        } else {
+            alert('Failed to delete product. Please try again.');
         }
+
     }
 
     function selectItem(product: typeof products[0]) {
@@ -120,7 +116,7 @@
         outline: 2px solid #ff5722;
     }
 
-    .product-wrapper {
+    .product-wrapper.selected {
         outline: 3px solid #2196f3;
         box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
         transform: scale(1.05);

@@ -63,28 +63,24 @@
             return;
         }
 
-        try {
-            const response = await fetch("/api/products", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(product),
-            });
+        const response = await fetch("/api/products", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(product),
+        });
 
-            const result = await response.json();
+        const result = await response.json();
 
-            if (!result.success) {
-                alert("Failed to add product: " + result.message);
-                return;
-            }
-
-            alert("Product added successfully!");
-            goto("/admin");
-        } catch (err) {
-            console.error("Unexpected error adding product:", err);
-            alert("An unexpected error occurred. Please try again.");
+        if (!result.success) {
+            alert("Failed to add product: " + result.message);
+            return;
         }
+
+        alert("Product added successfully!");
+        await goto("/admin");
+
     }
 
     async function handleImageUpload(event: Event | DragEvent) {
@@ -146,6 +142,9 @@
         <label for="image">Image:</label>
         <div
                 class="image-upload"
+                role="button"
+                aria-label="Image upload area"
+                tabindex="0"
                 on:dragover|preventDefault={() => (dragOver = true)}
                 on:dragleave|preventDefault={() => (dragOver = false)}
                 on:drop|preventDefault={handleImageUpload}
@@ -157,7 +156,6 @@
                     on:change={handleImageUpload}
             />
         </div>
-
 
         <label for="type">Type:</label>
         <select id="type" bind:value={product.type} required>
@@ -199,8 +197,7 @@
             <option value="other">Other</option>
         </select>
 
-
-        <label>Sizes:</label>
+        Sizes:
         <div class="sizes-container">
 
             <div class="size-header">
@@ -290,7 +287,7 @@
         transition: border-color 0.3s;
     }
 
-    .image-upload.drag-over {
+    .image-upload {
         border-color: #2196f3;
     }
 

@@ -1,14 +1,13 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
 
-    // Hodnoty predvyplníme údajmi načítanými z backendu
     export let data: { product: any };
     type Size = {
         size: number;
         quantity: number;
     };
 
-    let product = structuredClone(data.product); // Skopírujeme dáta produktu, aby sme ich mohli upraviť
+    let product = structuredClone(data.product);
     let dragOver = false;
     let uploadingImage = false;
 
@@ -65,26 +64,23 @@
     }
 
     async function updateProduct() {
-        try {
-            const response = await fetch(`/admin/editProduct/${product.id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(product),
-            });
 
-            const result = await response.json();
+        const response = await fetch(`/admin/editProduct/${product.id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(product),
+        });
 
-            if (!result.success) {
-                alert('Failed to update product. Please try again.');
-                return;
-            }
+        const result = await response.json();
 
-            alert('Product updated successfully!');
-            goto('/admin');
-        } catch (err) {
-            console.error('Error updating product:', err);
+        if (!result.success) {
             alert('Failed to update product. Please try again.');
+            return;
         }
+
+        alert('Product updated successfully!');
+        await goto('/admin');
+
     }
 
 </script>
@@ -101,6 +97,9 @@
         <label for="image">Image:</label>
         <div
                 class="image-upload"
+                role="button"
+                aria-label="Image upload area"
+                tabindex="0"
                 on:dragover|preventDefault={() => (dragOver = true)}
                 on:dragleave|preventDefault={() => (dragOver = false)}
                 on:drop|preventDefault={handleImageUpload}
@@ -145,7 +144,7 @@
             <option value="other">Other</option>
         </select>
 
-        <label>Sizes:</label>
+        Sizes:
         <div class="sizes-container">
             <div class="size-header">
                 <span>Size</span>
@@ -233,7 +232,7 @@
         transition: border-color 0.3s;
     }
 
-    .image-upload.drag-over {
+    .image-upload {
         border-color: #2196f3;
     }
 
