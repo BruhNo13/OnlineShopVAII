@@ -21,42 +21,41 @@
 
     async function fetchOrders() {
         isLoading = true;
-        try {
-            const response = await fetch('/api/orders/adminOrders');
-            if (!response.ok) throw new Error('Failed to fetch orders');
-            const data = await response.json();
-            if (data.success) {
-                orders = data.orders;
-            } else {
-                alert(data.message || 'Failed to fetch orders');
-            }
-        } catch (err: any) {
-            console.error('Error fetching orders:', err.message);
-            alert('An error occurred while fetching orders.');
-        } finally {
-            isLoading = false;
+
+        const response = await fetch('/api/orders/adminOrders');
+        if (!response.ok) {
+            new Error('Failed to fetch orders');
         }
+
+        const data = await response.json();
+        if (data.success) {
+            orders = data.orders;
+        } else {
+            alert(data.message || 'Failed to fetch orders');
+        }
+        isLoading = false;
     }
 
     async function updateOrderStatus(orderId: string, status: string) {
-        try {
-            const response = await fetch('/api/orders/adminOrders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ orderId, status }),
-            });
 
-            if (!response.ok) throw new Error('Failed to update order status');
-            const data = await response.json();
-            if (data.success) {
-                const updatedOrder = orders.find((order) => order.id === orderId);
-                if (updatedOrder) updatedOrder.status = status;
-            } else {
-                alert('Failed to update order status');
-            }
-        } catch (err: any) {
-            console.error('Error updating order status:', err.message);
+        const response = await fetch('/api/orders/adminOrders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId, status }),
+        });
+
+        if (!response.ok) {
+            new Error('Failed to update order status');
         }
+
+        const data = await response.json();
+        if (data.success) {
+            const updatedOrder = orders.find((order) => order.id === orderId);
+            if (updatedOrder) updatedOrder.status = status;
+        } else {
+            alert('Failed to update order status');
+        }
+
     }
 
     onMount(() => {

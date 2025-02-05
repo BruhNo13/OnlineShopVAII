@@ -2,55 +2,48 @@ import { supabase } from '$lib/supabase';
 import { json } from '@sveltejs/kit';
 
 export async function GET() {
-    try {
-        const { data: types, error: typesError } = await supabase
-            .from('Products')
-            .select('type');
 
-        const { data: brands, error: brandsError } = await supabase
-            .from('Products')
-            .select('brand');
+    const { data: types, error: typesError } = await supabase
+        .from('Products')
+        .select('type');
 
-        const { data: colors, error: colorsError } = await supabase
-            .from('Products')
-            .select('color');
+    const { data: brands, error: brandsError } = await supabase
+        .from('Products')
+        .select('brand');
 
-        const { data: sizes, error: sizesError } = await supabase
-            .from('Product_Sizes')
-            .select('size');
+    const { data: colors, error: colorsError } = await supabase
+        .from('Products')
+        .select('color');
 
-        const { data: maxPriceData, error: priceError } = await supabase
-            .from('Products')
-            .select('price')
-            .order('price', { ascending: false })
-            .limit(1);
+    const { data: sizes, error: sizesError } = await supabase
+        .from('Product_Sizes')
+        .select('size');
 
-        // console.log('MAX price:', maxPriceData);
+    const { data: maxPriceData, error: priceError } = await supabase
+        .from('Products')
+        .select('price')
+        .order('price', { ascending: false })
+        .limit(1);
 
-        if (typesError || brandsError || colorsError || sizesError || priceError) {
-            return json({ message: 'Error fetching filter data' }, { status: 500 });
-        }
+    // console.log('MAX price:', maxPriceData);
 
-        const uniqueTypes = [...new Set(types.map((t) => t.type))];
-        const uniqueBrands = [...new Set(brands.map((b) => b.brand))];
-        const uniqueColors = [...new Set(colors.map((c) => c.color))];
-        const uniqueSizes = [...new Set(sizes.map((s) => s.size))];
-        const maxPrice = maxPriceData?.[0]?.price || 0;
-
-        return json({
-            types: uniqueTypes,
-            brands: uniqueBrands,
-            colors: uniqueColors,
-            sizes: uniqueSizes,
-            maxPrice,
-        });
-    } catch (error: any) {
-        console.error('Server error:', error);
-        return json(
-            { message: 'Unexpected server error', error: error.message },
-            { status: 500 }
-        );
+    if (typesError || brandsError || colorsError || sizesError || priceError) {
+        return json({ message: 'Error fetching filter data' });
     }
+
+    const uniqueTypes = [...new Set(types.map((t) => t.type))];
+    const uniqueBrands = [...new Set(brands.map((b) => b.brand))];
+    const uniqueColors = [...new Set(colors.map((c) => c.color))];
+    const uniqueSizes = [...new Set(sizes.map((s) => s.size))];
+    const maxPrice = maxPriceData?.[0]?.price || 0;
+
+    return json({
+        types: uniqueTypes,
+        brands: uniqueBrands,
+        colors: uniqueColors,
+        sizes: uniqueSizes,
+        maxPrice,
+    });
 }
 
 
@@ -77,15 +70,10 @@ export async function POST({ request, locals }) {
     }
 
     if (filters.size?.length) {
-        const { data: productIds, error: sizeError } = await supabase
+        const { data: productIds} = await supabase
             .from('Product_Sizes')
             .select('product_id')
             .in('size', filters.size);
-
-        if (sizeError) {
-            console.error('Error fetching product IDs for sizes:', sizeError.message);
-            return new Response(JSON.stringify({ message: 'Failed to filter by size.' }), { status: 500 });
-        }
 
         const ids = productIds?.map((row) => row.product_id) || [];
         query = query.in('id', ids);
@@ -135,17 +123,15 @@ export async function POST({ request, locals }) {
 
     const { data: products, error } = await query;
     if (error) {
-        console.error('Error fetching products:', error.message);
-        return new Response(JSON.stringify({ message: 'Failed to fetch products.' }), { status: 500 });
+        // console.error('Error fetching products:', error.message);
+        return new Response(JSON.stringify({ message: 'Failed to fetch products.' }));
     }
 
-    const { data: favorites, error: favoritesError } = userId
-        ? await supabase.from('Favorites').select('product_id').eq('user_id', userId)
-        : { data: [], error: null };
-
-    if (favoritesError) {
-        console.error('Error fetching favorites:', favoritesError.message);
-    }
+    const { data: favorites} = userId ? await supabase
+            .from('Favorites')
+            .select('product_id')
+            .eq('user_id', userId)
+        : { data: []};
 
     const favoriteIds = favorites?.map((fav) => fav.product_id) || [];
 
@@ -158,5 +144,5 @@ export async function POST({ request, locals }) {
         };
     });
 
-    return new Response(JSON.stringify({ products: productsWithImages }), { status: 200 });
+    return new Response(JSON.stringify({ products: productsWithImages }));
 }

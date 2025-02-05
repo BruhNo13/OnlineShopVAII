@@ -35,14 +35,14 @@
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to fetch cart items.');
+                new Error(errorData.message || 'Failed to fetch cart items.');
             }
 
             const data = await response.json();
             if (data.success) {
                 cartItems = data.cartItems || [];
             } else {
-                throw new Error(data.message || 'Unknown error occurred.');
+                new Error(data.message || 'Unknown error occurred.');
             }
         } catch (error: any) {
             console.error('Error fetching cart items:', error.message);
@@ -97,7 +97,7 @@
             });
 
             if (!response.ok) {
-                throw new Error('Failed to remove item from cart.');
+                new Error('Failed to remove item from cart.');
             }
 
             cartItems = cartItems.filter((item) => item.id !== cartItemId);
@@ -118,7 +118,7 @@
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to place order.');
+                new Error(errorData.message || 'Failed to place order.');
             }
 
             alert('Order placed successfully!');

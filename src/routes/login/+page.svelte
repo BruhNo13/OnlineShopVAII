@@ -127,8 +127,6 @@
     </form>
 
     <footer class="login-footer">
-        <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
-        <hr />
         <p>New user? <a href="/signup" class="signup-link">Sign up</a></p>
     </footer>
 </div>
@@ -228,15 +226,6 @@
         margin-top: 1rem;
         font-size: 0.9rem;
         color: #555;
-    }
-
-    .login-footer .forgot-password {
-        color: #007bff;
-        text-decoration: none;
-    }
-
-    .login-footer .forgot-password:hover {
-        text-decoration: underline;
     }
 
     .login-footer hr {

@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { page } from '$app/stores';
     import Product from "../../components/Product.svelte";
     import { writable } from "svelte/store";
 
@@ -25,13 +24,13 @@
         if (initialGender) {
             selectedFilters.gender = [initialGender];
         } else {
-            delete selectedFilters.gender;
+            selectedFilters.gender = [];
         }
 
         if (initialCategory) {
             selectedFilters.category = [initialCategory];
         } else {
-            delete selectedFilters.category;
+            selectedFilters.category = [];
         }
     }
 
@@ -72,7 +71,7 @@
         } else {
             selectedFilters[filterName] = [...(selectedFilters[filterName] || []), value];
         }
-        fetchProducts(); // Zabezpečí aktualizáciu produktov
+        fetchProducts();
     }
 
     function updatePrice(value: number) {

@@ -18,39 +18,33 @@
 
     async function fetchFavorites() {
         isLoading = true;
-        try {
-            const response = await fetch('/api/favorites', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+        const response = await fetch('/api/favorites', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to fetch favorites');
-            }
-
-            const { favorites } = await response.json();
-
-            const productDetails = await Promise.all(
-                favorites.map(async (productId: any) => {
-                    const response = await fetch(`/api/products/${productId}`);
-                    if (response.ok) {
-                        return await response.json();
-                    } else {
-                        console.error(`Failed to fetch details for product ID: ${productId}`);
-                        return null;
-                    }
-                })
-            );
-
-            favoriteProducts = productDetails.filter((product) => product !== null);
-        } catch (error: any) {
-            errorMessage = error.message;
-        } finally {
-            isLoading = false;
+        if (!response.ok) {
+            const errorData = await response.json();
+            new Error(errorData.message || 'Failed to fetch favorites');
         }
+
+        const { favorites } = await response.json();
+
+        const productDetails = await Promise.all(
+            favorites.map(async (productId: any) => {
+                const response = await fetch(`/api/products/${productId}`);
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    console.error(`Failed to fetch details for product ID: ${productId}`);
+                    return null;
+                }
+            })
+        );
+        favoriteProducts = productDetails.filter((product) => product !== null);
+        isLoading = false;
     }
 
     onMount(fetchFavorites);
