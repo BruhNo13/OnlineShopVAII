@@ -2,11 +2,12 @@
     import { onMount } from 'svelte';
     import { page } from '$app/stores';
     import Product from "../../components/Product.svelte";
+    import { writable } from "svelte/store";
 
     let selectedFilters: { [key: string]: any[] } = {};
     let selectedPrice = 0;
     let maxPrice = 0;
-    let products: any[] = [];
+    let products = writable<any[]>([]);
     let filterOptions = {
         types: [],
         brands: [],
@@ -16,8 +17,8 @@
         categories: ['clothing', 'shoes', 'accessories'],
     };
 
-    $: {
-        const urlParams = new URLSearchParams($page.url.search);
+    function initializeFilters() {
+        const urlParams = new URLSearchParams(window.location.search);
         const initialGender = urlParams.get('gender');
         const initialCategory = urlParams.get('category');
 
@@ -32,32 +33,21 @@
         } else {
             delete selectedFilters.category;
         }
-
-        selectedFilters.price = [selectedPrice];
-        fetchProducts();
     }
 
     async function fetchFilterOptions() {
-        try {
-            const response = await fetch('/api/filter', {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            });
+        const response = await fetch('/api/filter', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+        });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch filter options: ${response.status}`);
-            }
-
-            const data = await response.json();
-            filterOptions.types = data.types || [];
-            filterOptions.brands = data.brands || [];
-            filterOptions.colors = data.colors || [];
-            filterOptions.sizes = data.sizes || [];
-            maxPrice = data.maxPrice || 0;
-            selectedPrice = maxPrice;
-        } catch (error: any) {
-            console.error('Error fetching filter options:', error.message);
-        }
+        const data = await response.json();
+        filterOptions.types = data.types || [];
+        filterOptions.brands = data.brands || [];
+        filterOptions.colors = data.colors || [];
+        filterOptions.sizes = data.sizes || [];
+        maxPrice = data.maxPrice || 0;
+        selectedPrice = maxPrice;
     }
 
     async function fetchProducts() {
@@ -70,7 +60,7 @@
 
         const data = await response.json();
         if (response.ok) {
-            products = data.products;
+            products.set(data.products);
         } else {
             console.error('Error fetching products:', data.message);
         }
@@ -82,7 +72,7 @@
         } else {
             selectedFilters[filterName] = [...(selectedFilters[filterName] || []), value];
         }
-        fetchProducts();
+        fetchProducts(); // Zabezpečí aktualizáciu produktov
     }
 
     function updatePrice(value: number) {
@@ -99,11 +89,13 @@
         fetchProducts();
     }
 
-    onMount(async () => {
-        await fetchFilterOptions();
-        await fetchProducts();
+    onMount(() => {
+        initializeFilters();
+        fetchFilterOptions();
+        fetchProducts();
     });
 </script>
+
 
 <main class="filter-page">
     <div class="filters">
@@ -235,8 +227,8 @@
     </div>
 
     <div class="products-grid">
-        {#if products && products.length > 0}
-            {#each products as product (product.id)}
+        {#if products && $products.length > 0}
+            {#each $products as product (product.id)}
                 <Product {product} isFavorite={product.isFavorite} />
             {/each}
         {:else}
