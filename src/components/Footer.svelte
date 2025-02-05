@@ -1,5 +1,5 @@
 <footer class="footer">
-    <p>&copy; 2024 FakeFoot. All rights reserved.</p>
+    <p>&copy; 2024 FakeShein. All rights reserved.</p>
 </footer>
 
 <style>

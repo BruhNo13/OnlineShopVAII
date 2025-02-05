@@ -6,14 +6,6 @@
     const product = ProductData.product;
     const reviews = product.reviews || [];
 
-    // interface Review {
-    //     id: string;
-    //     rating: number;
-    //     comment: string;
-    //     created_at: string;
-    //     user_name: string | null;
-    // }
-
     let selectedSize: number | null = null;
     let quantity = 1;
     let newReview: { rating: number; comment: string } = { rating: 0, comment: '' };
@@ -26,76 +18,66 @@
             return;
         }
 
-        try {
-            const response = await fetch('/api/cart/product', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    productId: product.id,
-                    size: selectedSize,
-                    quantity,
-                }),
-            });
+        const response = await fetch('/api/cart/product', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                productId: product.id,
+                size: selectedSize,
+                quantity,
+            }),
+        });
 
-            const result = await response.json();
-            if (result.success) {
-                alert(`Product ${product.name} in size ${selectedSize} has been added to your cart.`);
-            } else {
-                alert('Failed to add product to cart.');
-            }
-        } catch (err) {
-            console.error('Error adding to cart:', err);
-            alert('An error occurred. Please try again.');
+        const result = await response.json();
+        if (result.success) {
+            alert(`Product ${product.name} in size ${selectedSize} has been added to your cart.`);
+        } else {
+            alert('Failed to add product to cart.');
         }
     }
 
     async function addToFavorites() {
-        try {
-            const response = await fetch('/api/favorites', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ productId: product.id }),
-            });
 
-            if (response.ok) {
-                alert(`Product ${product.name} has been added to favorites.`);
-            } else {
-                alert('Failed to add product to favorites.');
-            }
-        } catch (error) {
-            console.error('Error adding to favorites:', error);
+        const response = await fetch('/api/favorites', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId: product.id }),
+        });
+
+        if (response.ok) {
+            alert(`Product ${product.name} has been added to favorites.`);
+        } else {
             alert('Failed to add product to favorites.');
         }
+
     }
 
     async function addReview() {
-        if (!newReview.comment.trim() || newReview.rating < 0 || newReview.rating > 5) {
+        if (newReview.rating < 0 || newReview.rating > 5) {
             alert('Please provide a valid rating (0-5) and comment.');
             return;
         }
 
         isSubmitting = true;
 
-        try {
-            const response = await fetch(`/api/products/${product.id}/reviews`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newReview),
-            });
+        const response = await fetch(`/api/products/${product.id}/reviews`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newReview),
+        });
 
-            if (!response.ok) throw new Error('Failed to add review.');
-
-            const createdReview = await response.json();
-            reviews.unshift(createdReview);
-            newReview = { rating: 0, comment: '' };
-        } catch (err: any) {
-            console.error('Error adding review:', err.message);
-            alert('Failed to submit the review. Please try again.');
-        } finally {
-            isSubmitting = false;
+        if (!response.ok) {
+            throw new Error('Failed to add review.');
         }
+
+        const createdReview = await response.json();
+        reviews.unshift(createdReview);
+        newReview = { rating: 0, comment: '' };
+
+        isSubmitting = false;
+
     }
 </script>
 
@@ -207,13 +189,6 @@
         font-size: 1.2rem;
         color: #333;
         margin-bottom: 1rem;
-    }
-
-
-    .form-group label {
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-        color: #555;
     }
 
     .product-page {

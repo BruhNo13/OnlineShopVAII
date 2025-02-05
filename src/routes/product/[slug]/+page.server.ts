@@ -4,24 +4,16 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ params }) => {
     const { slug } = params;
 
-    const { data: product, error: productError } = await supabase
+    const { data: product } = await supabase
         .from('Products')
         .select('*')
         .eq('id', slug)
         .single();
 
-    if (productError || !product) {
-        throw new Error('Nepodarilo sa načítať produkt.');
-    }
-
-    const { data: sizes, error: sizesError } = await supabase
+    const { data: sizes } = await supabase
         .from('Product_Sizes')
         .select('size, quantity')
         .eq('product_id', slug);
-
-    if (sizesError) {
-        throw new Error('Nepodarilo sa načítať veľkosti produktu.');
-    }
 
     product.sizes = sizes || [];
 
@@ -40,8 +32,8 @@ export const load: PageServerLoad = async ({ params }) => {
         .order('created_at', { ascending: false });
 
     if (reviewsError) {
-        console.error('Chyba pri načítaní recenzií:', reviewsError.message);
-        throw new Error('Nepodarilo sa načítať recenzie.');
+        console.error('chyba pri nacitani recenziíi:', reviewsError.message);
+        throw new Error('nepodarilo sa nacitat recenzie.');
     }
 
     const userIds = reviews.map((review) => review.user_id);

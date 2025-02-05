@@ -31,7 +31,7 @@
 <header class="header">
     <nav class="navbar">
         <div class="nav-left">
-            <a href="/" class="logo">FakeFoot</a>
+            <a href="/" class="logo">FakeShein</a>
             <ul class="nav-links">
                 <li class="dropdown">
                     <a href="/filter?gender=male" class="dropdown-toggle">MEN</a>

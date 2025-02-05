@@ -2,11 +2,11 @@
     import { onMount } from 'svelte';
     import { page } from '$app/stores';
 
-    $: user = $page.data.user;
-    $: surname = $page.data.surname;
-    $: email = $page.data.email;
-    $: gender = $page.data.gender;
-    $: role = $page.data.role;
+    let user = $page.data.user;
+    let surname = $page.data.surname;
+    let email = $page.data.email;
+    let gender = $page.data.gender;
+    let role = $page.data.role;
 
     let favoritesCount = 0;
     let cartCount = 0;
@@ -14,26 +14,24 @@
     let reviewsCount = 0;
 
     async function fetchProfileStats() {
-        try {
-            const response = await fetch('/api/profile/stats', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
 
-            if (!response.ok) {
-                Error('Failed to fetch profile statistics');
-            }
+        const response = await fetch('/api/profile/stats', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-            const data = await response.json();
-            favoritesCount = data.favoritesCount || 0;
-            cartCount = data.cartCount || 0;
-            ordersCount = data.ordersCount || 0;
-            reviewsCount = data.reviewsCount || 0;
-        } catch (error: any) {
-            console.error('Error fetching profile statistics:', error.message);
+        if (!response.ok) {
+            Error('Failed to fetch profile statistics');
         }
+
+        const data = await response.json();
+        favoritesCount = data.favoritesCount || 0;
+        cartCount = data.cartCount || 0;
+        ordersCount = data.ordersCount || 0;
+        reviewsCount = data.reviewsCount || 0;
+
     }
 
     onMount(() => {
@@ -55,8 +53,8 @@
             <ul>
                 <li><a href="/favorites">Favorites: {favoritesCount} products</a></li>
                 <li><a href="/cart">Cart: {cartCount} products</a></li>
-                <li><a href="/orders/userOrders">Orders: {ordersCount} active</a></li>
-                <li><a href="/reviews">Reviews: {reviewsCount} written</a></li>
+                <li><a href="/orders/userOrders">Orders: {ordersCount} total</a></li>
+                <li>Reviews: {reviewsCount} written</li>
             </ul>
         </section>
     {:else}

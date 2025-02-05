@@ -107,33 +107,27 @@
     }
 
     async function signup() {
-        console.log('Sending signup request');
-        try {
-            const response = await fetch('/api/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, name }),
-            });
 
-            console.log('Received response from server:', response);
+        const response = await fetch('/api/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, name }),
+        });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('Signup result:', result);
-
-            if (!result.success) {
-                message = result.message;
-                return;
-            }
-
-            window.location.href = '/';
-        } catch (error) {
-            console.error('Error during signup:', error);
-            message = 'An unexpected error occurred.';
+        if (!response.ok) {
+            new Error(`Sign up error.`);
         }
+
+        const result = await response.json();
+        console.log('Signup result:', result);
+
+        if (!result.success) {
+            message = result.message;
+            return;
+        }
+
+        window.location.href = '/';
+
     }
 
 </script>

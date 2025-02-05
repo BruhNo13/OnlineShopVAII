@@ -20,55 +20,46 @@
 
     async function fetchOrders() {
         isLoading = true;
-        try {
-            const response = await fetch('/api/orders/userOrders', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to fetch orders.');
-            }
+        const response = await fetch('/api/orders/userOrders', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-            const data = await response.json();
-            orders = data.orders;
-        } catch (error: any) {
-            console.error('Error fetching orders:', error.message);
-            errorMessage = error.message;
-        } finally {
-            isLoading = false;
+        if (!response.ok) {
+            const errorData = await response.json();
+            new Error(errorData.message || 'Failed to fetch orders.');
         }
+
+        const data = await response.json();
+        orders = data.orders;
+
+        isLoading = false;
     }
 
     async function cancelOrder(orderId: string) {
         const confirmCancel = confirm('Are you sure you want to cancel this order? This action cannot be undone.');
         if (!confirmCancel) return;
 
-        try {
-            const response = await fetch('/api/orders/userOrders', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ orderId }),
-            });
+        const response = await fetch('/api/orders/userOrders', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderId }),
+        });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to cancel order.');
-            }
-
-            alert('Order canceled successfully.');
-            orders = orders.map((order) =>
-                order.id === orderId ? { ...order, status: 'canceled' } : order
-            );
-        } catch (error: any) {
-            console.error('Error canceling order:', error.message);
-            alert('Failed to cancel order. Please try again.');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to cancel order.');
         }
+
+        alert('Order canceled successfully.');
+        orders = orders.map((order) =>
+            order.id === orderId ? { ...order, status: 'canceled' } : order
+        );
     }
 
     onMount(() => {
