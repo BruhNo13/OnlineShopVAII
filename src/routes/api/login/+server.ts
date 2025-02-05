@@ -12,7 +12,7 @@ export async function POST({ request, cookies }) {
 
     cookies.set('sb:token', data.session.access_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'strict',
         path: '/',
         maxAge: 60 * 60 * 24 * 7,

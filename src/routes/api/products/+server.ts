@@ -27,24 +27,26 @@ export async function POST({ request }) {
         gender: string;
     };
 
-
     const product: Product = await request.json();
 
     if (!/^[a-zA-Z\s-]+$/.test(product.name)) {
         return json(
             { success: false, message: 'Invalid name: Only letters, spaces, and hyphens are allowed.' },
+            { status: 400 }
         );
     }
 
     if (product.price < 0 || isNaN(product.price)) {
         return json(
             { success: false, message: 'Invalid price: Must be a positive number or zero.' },
+            { status: 400 }
         );
     }
 
     if (product.sale < 0 || product.sale > 100 || isNaN(product.sale)) {
         return json(
             { success: false, message: 'Invalid sale: Must be a number between 0 and 100.' },
+            { status: 400 }
         );
     }
 
@@ -54,10 +56,11 @@ export async function POST({ request }) {
                 success: false,
                 message: 'Invalid sizes: Each size must have a positive size and a non-negative quantity.'
             },
+            { status: 400 }
         );
     }
 
-    const { data: productData } = await supabase
+    const { data: productData, error: productError } = await supabase
         .from('Products')
         .insert({
             name: product.name,
@@ -72,6 +75,14 @@ export async function POST({ request }) {
         .select()
         .single();
 
+    if (productError || !productData) {
+        console.error('Error inserting product:', productError?.message);
+        return json(
+            { success: false, message: 'Failed to add product. Please try again later.' },
+            { status: 500 }
+        );
+    }
+
     const productId = productData.id;
 
     const sizeInsertData = product.sizes.map(({ size, quantity }) => ({
@@ -80,11 +91,17 @@ export async function POST({ request }) {
         quantity
     }));
 
-    // console.log('Size Insert Data:', sizeInsertData);
-
-    await supabase
+    const { error: sizeError } = await supabase
         .from('Product_Sizes')
         .insert(sizeInsertData);
+
+    if (sizeError) {
+        console.error('Error inserting product sizes:', sizeError.message);
+        return json(
+            { success: false, message: 'Failed to add product sizes. Please try again later.' },
+            { status: 500 }
+        );
+    }
 
     return json({ success: true, message: 'Product added successfully.' });
 }

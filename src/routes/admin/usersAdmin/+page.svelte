@@ -32,7 +32,6 @@
         isLoading = false;
     }
 
-
     async function updateUserRole(userId: string, role: string) {
         const response = await fetch('/api/users', {
             method: 'POST',
