@@ -1,12 +1,11 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Product from "../../components/Product.svelte";
-    import { writable } from "svelte/store";
 
     let selectedFilters: { [key: string]: any[] } = {};
     let selectedPrice = 0;
     let maxPrice = 0;
-    let products = writable<any[]>([]);
+    let products: any[] = [];
     let filterOptions = {
         types: [],
         brands: [],
@@ -59,7 +58,7 @@
 
         const data = await response.json();
         if (response.ok) {
-            products.set(data.products);
+            products = data.products || [];
         } else {
             console.error('Error fetching products:', data.message);
         }
@@ -88,13 +87,12 @@
         fetchProducts();
     }
 
-    onMount(() => {
+    onMount(async () => {
         initializeFilters();
-        fetchFilterOptions();
-        fetchProducts();
+        await fetchFilterOptions();
+        await fetchProducts();
     });
 </script>
-
 
 <main class="filter-page">
     <div class="filters">
@@ -226,8 +224,8 @@
     </div>
 
     <div class="products-grid">
-        {#if products && $products.length > 0}
-            {#each $products as product (product.id)}
+        {#if products.length > 0}
+            {#each products as product (product.id)}
                 <Product {product} isFavorite={product.isFavorite} />
             {/each}
         {:else}
@@ -237,6 +235,7 @@
         {/if}
     </div>
 </main>
+
 
 <style>
     .filter-page {
