@@ -36,16 +36,20 @@ Spusti nasledujúci príkaz na nainštalovanie všetkých potrebných knižníc:
 
 ### 3. Nastavenie Supabase
 V koreňovom priečinku projektu vytvor súbor .env a doplň svoje Supabase údaje:
-SUPABASE_URL=https://xyzcompany.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
+- SUPABASE_URL=url-tvojej-supabase
+- SUPABASE_ANON_KEY=tvoj-anon-kluc
 
 ---
 
 ### 4. Spustenie aplikácie
 Ak chceš spustiť aplikáciu v vývojovom režime, použi:
-npm run dev
+- npm run dev
+
 Aplikácia bude dostupná na http://localhost:5173/.
 
+Ak chceš aplikáciu spustiť v produkčnom režime, spusti:
+- npm run build
+- npm run preview
 ---
 
 🌟 Použité technológie
