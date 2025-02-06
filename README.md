@@ -24,7 +24,9 @@ cd fakeshein
 
 ### 2. Inštalácia závislostí
 Spusti nasledujúci príkaz na nainštalovanie všetkých potrebných knižníc:
-npm install
+- npm install
+- npm install -D @sveltejs/adapter-auto @sveltejs/kit @sveltejs/vite-plugin-svelte @tsconfig/svelte svelte svelte-check sveltekit-superforms typescript vite zod
+- npm install @supabase/auth-helpers-sveltekit @supabase/auth-ui-shared @supabase/auth-ui-svelte @supabase/ssr @supabase/supabase-js bootstrap superforms
 
 ---
 
