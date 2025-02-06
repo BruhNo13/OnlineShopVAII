@@ -79,7 +79,7 @@ export async function DELETE({ request }) {
     const { id } = await request.json();
 
     if (!id) {
-        return json({ success: false, message: "Product ID is required for deletion." }, { status: 400 });
+        return json({ success: false, message: "Product ID is required for deletion." });
     }
 
     console.log('Received ID for deletion:', id);

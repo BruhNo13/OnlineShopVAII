@@ -1,8 +1,35 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
+import { z } from 'zod';
+
+const sizeSchema = z.object({
+    size: z.number().min(1, "Size must be greater than 0."),
+    quantity: z.number().min(0, "Quantity must be 0 or greater.")
+});
+
+const productSchema = z.object({
+    name: z.string()
+        .min(1, "Name is required")
+        .regex(/^[a-zA-Z\s-]+$/, "Name can only contain letters, spaces, and hyphens."),
+    price: z.number()
+        .min(0, "Price must be a positive number or zero."),
+    image: z.string().optional(),
+    type: z.enum(["tshirt", "hoodie", "jacket", "coat", "pants", "shoes"]),
+    sizes: z.array(sizeSchema).nonempty("At least one size must be specified."),
+    color: z.enum(["red", "blue", "green", "white", "black"]),
+    brand: z.enum(["adidas", "nike", "puma"]),
+    sale: z.number()
+        .min(0, "Sale must be at least 0.")
+        .max(100, "Sale cannot exceed 100."),
+    gender: z.enum(["male", "female", "other"]),
+});
 
 export async function GET({ params }) {
     const { id } = params;
+
+    if (!id) {
+        return json({ success: false, message: "Missing product ID" });
+    }
 
     const { data: product } = await supabase
         .from('Products')
@@ -24,52 +51,20 @@ export async function GET({ params }) {
 export async function POST({ request, params }: { request: Request; params: { id: string } }) {
     const { id } = params;
 
-    type Size = {
-        size: number;
-        quantity: number;
-    };
+    if (!id) {
+        return json({ success: false, message: "Missing product ID" }, { status: 400 });
+    }
 
-    type Product = {
-        name: string;
-        price: number;
-        image: string;
-        type: string;
-        sizes: Size[];
-        color: string;
-        brand: string;
-        sale: number;
-        gender: string;
-    };
+    const productPayload = await request.json();
+    const validation = productSchema.safeParse(productPayload);
 
-    const product: Product = await request.json();
-
-    if (!/^[a-zA-Z\s-]+$/.test(product.name)) {
+    if (!validation.success) {
         return json(
-            { success: false, message: 'Invalid name: Only letters, spaces, and hyphens are allowed.' },
-            { status: 400 }
+            { success: false, message: "Validation failed", errors: validation.error.errors },
         );
     }
 
-    if (product.price < 0 || isNaN(product.price)) {
-        return json(
-            { success: false, message: 'Invalid price: Must be a positive number or zero.' },
-            { status: 400 }
-        );
-    }
-
-    if (product.sale < 0 || product.sale > 100 || isNaN(product.sale)) {
-        return json(
-            { success: false, message: 'Invalid sale: Must be a number between 0 and 100.' },
-            { status: 400 }
-        );
-    }
-
-    if (!Array.isArray(product.sizes) || product.sizes.some(size => size.size <= 0 || size.quantity < 0)) {
-        return json(
-            { success: false, message: 'Invalid sizes: Each size must have a positive size and a non-negative quantity.' },
-            { status: 400 }
-        );
-    }
+    const product = validation.data;
 
     await supabase
         .from('Products')
@@ -81,7 +76,7 @@ export async function POST({ request, params }: { request: Request; params: { id
             color: product.color,
             brand: product.brand,
             sale: product.sale,
-            gender: product.gender
+            gender: product.gender,
         })
         .eq('id', id);
 
@@ -90,15 +85,16 @@ export async function POST({ request, params }: { request: Request; params: { id
         .delete()
         .eq('product_id', id);
 
-    const sizeInsertData = product.sizes.map(size => ({
+    const sizeInsertData = product.sizes.map((size: { size: number; quantity: number }) => ({
         product_id: id,
         size: size.size,
-        quantity: size.quantity
+        quantity: size.quantity,
     }));
 
-    await supabase.from('Product_Sizes').insert(sizeInsertData);
+    await supabase
+        .from('Product_Sizes')
+        .insert(sizeInsertData);
 
-    return json({ success: true, message: 'Product updated successfully.' });
-
+    return json({ success: true, message: "Product updated successfully." });
 }
 

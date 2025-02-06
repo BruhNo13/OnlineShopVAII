@@ -1,13 +1,41 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { z } from "zod";
 
     export let data: { product: any };
+    let product = structuredClone(data.product);
+
+    const sizeSchema = z.object({
+        size: z.number().min(1, "Size must be greater than 0."),
+        quantity: z.number().min(0, "Quantity must be 0 or greater."),
+    });
+
+    const productSchema = z.object({
+        name: z
+            .string()
+            .min(1, "Name is required.")
+            .regex(/^[a-zA-Z\s-]+$/, "Name can only contain letters, spaces, and hyphens."),
+        price: z.number().min(0, "Price must be a positive number or zero."),
+        image: z.string().min(1, "Image is required."),
+        type: z.enum(["tshirt", "hoodie", "jacket", "coat", "pants", "shoes"]),
+        sizes: z
+            .array(sizeSchema)
+            .nonempty("At least one size must be specified."),
+        color: z.enum(["red", "blue", "green", "white", "black"]),
+        brand: z.enum(["adidas", "nike", "puma"]),
+        sale: z
+            .number()
+            .min(0, "Sale must be at least 0.")
+            .max(100, "Sale cannot exceed 100."),
+        gender: z.enum(["male", "female", "other"]),
+    });
+
     type Size = {
         size: number;
         quantity: number;
     };
 
-    let product = structuredClone(data.product);
+    let errors: { [key: string]: string } = {};
     let dragOver = false;
     let uploadingImage = false;
 
@@ -19,6 +47,19 @@
         product.sizes = product.sizes.filter((_:Size, i: number) => i !== index);
     }
 
+    function validateFormLocally() {
+        try {
+            productSchema.parse(product);
+            errors = {};
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                errors = {};
+                error.errors.forEach(err => {
+                    errors[err.path[0]] = err.message;
+                });
+            }
+        }
+    }
 
     async function handleImageUpload(event: DragEvent | Event) {
         uploadingImage = true;
@@ -37,33 +78,28 @@
             return;
         }
 
-        try {
-            const formData = new FormData();
-            formData.append("file", file);
+        const formData = new FormData();
+        formData.append("file", file);
 
-            const response = await fetch("/api/products/images", {
-                method: "POST",
-                body: formData,
-            });
+        const response = await fetch("/api/products/images", {
+            method: "POST",
+            body: formData,
+        });
 
-            const result = await response.json();
+        const result = await response.json();
 
-            if (!result.success) {
-                alert("Failed to upload image: " + result.message);
-                return;
-            }
-
-            product.image = result.filePath;
-            alert("Image uploaded successfully!");
-        } catch (err) {
-            console.error("Error uploading image:", err);
-            alert("Failed to upload image. Please try again.");
-        } finally {
-            uploadingImage = false;
+        if (!result.success) {
+            alert("Failed to upload image: " + result.message);
+            return;
         }
+
+        product.image = result.filePath;
+        // alert("Image uploaded successfully!");
+
     }
 
     async function updateProduct() {
+        validateFormLocally();
 
         const response = await fetch(`/admin/editProduct/${product.id}`, {
             method: 'POST',
@@ -90,9 +126,11 @@
     <form class="product-form" on:submit|preventDefault={updateProduct}>
         <label for="name">Name:</label>
         <input type="text" id="name" bind:value={product.name} placeholder="Enter product name" required />
+        <p class="error">{errors.name}</p>
 
         <label for="price">Price:</label>
         <input type="number" id="price" bind:value={product.price} placeholder="Enter price" min="0" required />
+        <p class="error">{errors.price}</p>
 
         <label for="image">Image:</label>
         <div
@@ -107,6 +145,7 @@
             <p>{dragOver ? "Drop your image here" : "Drag and drop an image or click to upload"}</p>
             <input type="file" id="image" on:change={handleImageUpload} />
         </div>
+        <p class="error">{errors.image}</p>
 
         <label for="type">Type:</label>
         <select id="type" bind:value={product.type} required>
@@ -117,6 +156,7 @@
             <option value="pants">Pants</option>
             <option value="shoes">Shoes</option>
         </select>
+        <p class="error">{errors.type}</p>
 
         <label for="color">Color:</label>
         <select id="color" bind:value={product.color} required>
@@ -126,6 +166,7 @@
             <option value="white">White</option>
             <option value="black">Black</option>
         </select>
+        <p class="error">{errors.color}</p>
 
         <label for="brand">Brand:</label>
         <select id="brand" bind:value={product.brand} required>
@@ -133,9 +174,11 @@
             <option value="nike">Nike</option>
             <option value="puma">Puma</option>
         </select>
+        <p class="error">{errors.brand}</p>
 
         <label for="sale">Sale (%):</label>
         <input type="number" id="sale" bind:value={product.sale} placeholder="Enter sale percentage" min="0" max="100" required />
+        <p class="error">{errors.sale}</p>
 
         <label for="gender">Gender:</label>
         <select id="gender" bind:value={product.gender} required>
@@ -143,6 +186,7 @@
             <option value="female">Female</option>
             <option value="other">Other</option>
         </select>
+        <p class="error">{errors.gender}</p>
 
         Sizes:
         <div class="sizes-container">
@@ -178,12 +222,18 @@
             {/each}
             <button type="button" class="add-size-button" on:click={addSizeField}>Add Size</button>
         </div>
+        <p class="error">{errors.sizes}</p>
 
         <button type="submit" class="submit-button">Save Changes</button>
     </form>
 </main>
 
 <style>
+    .error {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+    }
     .add-product-page {
         max-width: 800px;
         margin: 2rem auto;
