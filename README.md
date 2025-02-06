@@ -18,13 +18,19 @@ Pred inštaláciou sa uisti, že máš na svojom zariadení nainštalované:
 Najskôr si stiahni repozitár:
 
 git clone https://github.com/BruhNo13/OnlineShopVAII.git
+
 cd fakeshein
 
 ---
 
 ### 2. Inštalácia závislostí
 Spusti nasledujúci príkaz na nainštalovanie všetkých potrebných knižníc:
-npm install
+
+- npm install
+
+- npm install -D @sveltejs/adapter-auto @sveltejs/kit @sveltejs/vite-plugin-svelte autoprefixer postcss svelte svelte-check svelte-preprocess tailwindcss typescript vite
+
+- npm install @supabase/supabase-js zod
 
 ---
 
