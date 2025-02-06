@@ -1,5 +1,6 @@
 import type { Handle } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
+import {hooks} from "../.svelte-kit/generated/client/app";
 
 export const handle: Handle = async ({ event, resolve }) => {
     const session = event.cookies.get('sb:token');
@@ -25,6 +26,6 @@ export const handle: Handle = async ({ event, resolve }) => {
     } else {
         event.locals.user = null;
     }
-
+    // console.log('hooks');
     return resolve(event);
 };

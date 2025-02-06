@@ -2,21 +2,19 @@ import { supabase } from '$lib/supabase';
 
 export const load = async () => {
 
-    const { data: types } = await supabase.from('Products').select('type');
-    const { data: brands } = await supabase.from('Products').select('brand');
-    const { data: colors } = await supabase.from('Products').select('color');
-    const { data: sizes } = await supabase.from('Product_Sizes').select('size');
-    const { data: maxPriceData } = await supabase
+    const { data: products } = await supabase
         .from('Products')
-        .select('price')
-        .order('price', { ascending: false })
-        .limit(1);
+        .select('type, brand, color, price');
 
-    const uniqueTypes = [...new Set(types?.map((t) => t.type) || [])];
-    const uniqueBrands = [...new Set(brands?.map((b) => b.brand) || [])];
-    const uniqueColors = [...new Set(colors?.map((c) => c.color) || [])];
+    const { data: sizes } = await supabase
+        .from('Product_Sizes')
+        .select('size');
+
+    const uniqueTypes = [...new Set(products?.map((p) => p.type) || [])];
+    const uniqueBrands = [...new Set(products?.map((p) => p.brand) || [])];
+    const uniqueColors = [...new Set(products?.map((p) => p.color) || [])];
     const uniqueSizes = [...new Set(sizes?.map((s) => s.size) || [])];
-    const maxPrice = maxPriceData?.[0]?.price || 0;
+    const maxPrice = products?.reduce((max, p) => Math.max(max, p.price), 0) || 0;
 
     return {
         props: {

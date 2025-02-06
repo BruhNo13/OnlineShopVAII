@@ -1,5 +1,5 @@
 <script lang="ts">
-
+import { z } from "zod";
     let email = '';
     let password = '';
     let message = '';
@@ -12,54 +12,59 @@
     let emailTouched = false;
     let passwordTouched = false;
 
+    let errors = { email: '', password: '' };
+
+    const loginSchema = z.object({
+        email: z.string().email('Enter a valid email address!'),
+        password: z
+            .string()
+            .min(8, 'Password must have at least 8 characters.')
+            .regex(/[A-Z]/, 'Password must contain at least one uppercase letter.')
+            .regex(/\d/, 'Password must contain at least one number.')
+            .regex(/[@$!%*?&]/, 'Password must contain at least one special character.'),
+    });
+
     function togglePasswordVisibility() {
         showPassword = !showPassword;
     }
 
-    function validateEmail(email: string): boolean {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            emailError = 'Enter a valid email address!';
-            return false;
+    const validateForm = () => {
+        const result = loginSchema.safeParse({ email, password });
+
+        if (result.success) {
+            errors = { email: '', password: '' };
+            isFormValid = true;
+        } else {
+            errors = { email: '', password: '' };
+            result.error.errors.forEach((err) => {
+                const key = err.path[0];
+                if (typeof key === 'string' && key in errors) {
+                    errors[key as keyof typeof errors] = err.message;
+                }
+            });
+            isFormValid = false;
         }
-        emailError = '';
-        return true;
-    }
+    };
 
-    function validatePassword(password: string): boolean {
-        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        if (!passwordRegex.test(password)) {
-            passwordError = 'Password must have at least 8 characters, one uppercase letter, one number, and one special character.';
-            return false;
-        }
-        passwordError = '';
-        return true;
-    }
-
-    function validateForm(): void {
-        const isEmailValid = validateEmail(email);
-        const isPasswordValid = validatePassword(password);
-        isFormValid = isEmailValid && isPasswordValid;
-    }
-
-    function handleBlur(field: 'email' | 'password') {
+    const handleBlur = (field: 'email' | 'password') => {
         if (field === 'email') {
             emailTouched = true;
-            validateEmail(email);
         } else if (field === 'password') {
             passwordTouched = true;
-            validatePassword(password);
         }
         validateForm();
     }
 
-    function handleInput(field: 'email' | 'password') {
-        if (field === 'email' && emailTouched) validateEmail(email);
-        if (field === 'password' && passwordTouched) validatePassword(password);
-        validateForm();
-    }
+    const handleInput = (field: 'email' | 'password') => {
+        if ((field === 'email' && emailTouched) || (field === 'password' && passwordTouched)) {
+            validateForm();
+        }
+    };
 
     async function login() {
+        validateForm();
+        if (!isFormValid) return;
+
         const response = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -74,6 +79,7 @@
 
         window.location.href = '/';
     }
+
 </script>
 
 <div class="login-container">
@@ -226,12 +232,6 @@
         margin-top: 1rem;
         font-size: 0.9rem;
         color: #555;
-    }
-
-    .login-footer hr {
-        margin: 1rem 0;
-        border: none;
-        border-top: 1px solid #ddd;
     }
 
     .login-footer .signup-link {

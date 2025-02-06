@@ -8,7 +8,7 @@
             .regex(/^[a-zA-Z\s-]+$/, "Name can only contain letters, spaces, and hyphens."),
         price: z.number()
             .min(0, "Price must be a positive number or zero."),
-        // image: z.instanceof(File, { message: 'Image file is required' }),
+        image: z.instanceof(File, { message: 'Image file is required' }),
         type: z.enum(["tshirt", "hoodie", "jacket", "coat", "pants", "shoes"]),
         sizes: z.array(
             z.object({
@@ -35,6 +35,9 @@
         sale: 0,
         gender: "male",
     };
+
+    let file: File | null = null;
+
 
     let errors: Record<string, string> = {};
 
@@ -74,11 +77,8 @@
 
     }
 
-
     async function handleImageUpload(event: Event | DragEvent) {
         uploadingImage = true;
-
-        let file: File | null = null;
 
         if (event instanceof DragEvent && event.dataTransfer?.files) {
             file = event.dataTransfer.files[0];
