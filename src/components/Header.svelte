@@ -7,7 +7,7 @@
     let role = userDetails.role;
 
     async function logOut() {
-        const confirmLogOut = window.confirm('Are you sure you want to log out?');
+        const confirmLogOut = window.confirm('Do you want to log out?');
         if (confirmLogOut) {
             const response = await fetch('/api/logout', {
                 method: 'POST',

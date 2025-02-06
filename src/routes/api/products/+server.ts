@@ -108,8 +108,7 @@ export async function DELETE({ request, locals }) {
     if (!id) {
         return json({ success: false, message: "Product ID is required for deletion." });
     }
-
-    console.log('Received ID for deletion:', id);
+    // console.log('Received ID for deletion:', id);
 
     await supabase
         .from('Product_Sizes')

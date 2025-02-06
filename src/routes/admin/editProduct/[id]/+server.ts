@@ -80,7 +80,7 @@ export async function POST({ request, params, locals }: { request: Request; para
     const { id } = params;
 
     if (!id) {
-        return json({ success: false, message: "Missing product ID" }, { status: 400 });
+        return json({ success: false, message: "Missing product ID" });
     }
 
     const productPayload = await request.json();

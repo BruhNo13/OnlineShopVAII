@@ -45,20 +45,20 @@
     }
 
     function removeSizeField(index: number) {
-        product.sizes = product.sizes.filter((_:Size, i: number) => i !== index);
+        product.sizes = product.sizes.filter((sizesItem:Size, i: number) => i !== index);
     }
 
     function validateFormLocally() {
-        try {
-            productSchema.parse(product);
+        const result = productSchema.safeParse(product);
+
+        if (result.success) {
             errors = {};
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                errors = {};
-                error.errors.forEach(err => {
-                    errors[err.path[0]] = err.message;
-                });
-            }
+        } else {
+            errors = result.error.errors.reduce((acc, err) => {
+                const pathKey = err.path[0] as string;
+                acc[pathKey] = err.message;
+                return acc;
+            }, {} as Record<string, string>);
         }
     }
 

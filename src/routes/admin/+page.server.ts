@@ -18,11 +18,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 
     const urls = products.map((product) => {
         const { data } = supabase.storage.from('images').getPublicUrl(product.image);
-        return { id: product.id, image: data.publicUrl || '/images/default-image.jpg' };
+        return { id: product.id, image: data.publicUrl};
     });
 
     const updatedProducts = products.map((product) => {
-        const imageUrl = urls.find((url) => url.id === product.id)?.image || '/images/default-image.jpg';
+        const imageUrl = urls.find((url) => url.id === product.id)?.image;
         return {
             id: product.id,
             name: product.name,

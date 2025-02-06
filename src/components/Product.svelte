@@ -14,23 +14,19 @@
     export let isAdminPage: boolean = false;
 
     async function toggleFavorite() {
-        try {
-            const response = await fetch(`/api/favorites`, {
-                method: isFavorite ? 'DELETE' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ productId: product.id }),
-            });
+        const response = await fetch(`/api/favorites`, {
+            method: isFavorite ? 'DELETE' : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId: product.id }),
+        });
 
-            const result = await response.json();
-            if (result.success) {
-                isFavorite = !isFavorite;
-            } else {
-                alert('Nepodarilo sa aktualizovať obľúbené produkty. Skúste znova.');
-            }
-        } catch (error) {
-            console.error('Chyba pri aktualizácii obľúbených produktov:', error);
+        const result = await response.json();
+        if (result.success) {
+            isFavorite = !isFavorite;
+        } else {
+            alert('Nepodarilo sa aktualizovať obľúbené produkty. Skúste znova.');
         }
     }
 </script>
