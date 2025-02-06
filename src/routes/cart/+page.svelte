@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
 
-
     let cartItems: {
         id: string;
         product_id: string;
@@ -27,60 +26,44 @@
 
     async function fetchCartItems() {
         isLoading = true;
-        try {
-            const response = await fetch('/api/cart', {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            });
+        const response = await fetch('/api/cart', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+        });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                new Error(errorData.message || 'Failed to fetch cart items.');
-            }
-
-            const data = await response.json();
-            if (data.success) {
-                cartItems = data.cartItems || [];
-            } else {
-                new Error(data.message || 'Unknown error occurred.');
-            }
-        } catch (error: any) {
-            console.error('Error fetching cart items:', error.message);
-            errorMessage = error.message;
-        } finally {
-            isLoading = false;
+        if (!response.ok) {
+            const errorData = await response.json();
+            new Error(errorData.message || 'Failed to fetch cart items.');
         }
+
+        const data = await response.json();
+        if (data.success) {
+            cartItems = data.cartItems || [];
+        } else {
+            new Error(data.message || 'Unknown error occurred.');
+        }
+        isLoading = false;
     }
 
     async function updateCart(productId: string, size: number, quantityChange: number) {
-        try {
-            const response = await fetch('/api/cart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, size, quantity: quantityChange }),
-            });
-            const data = await response.json();
+        const response = await fetch('/api/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId, size, quantity: quantityChange }),
+        });
+        const data = await response.json();
 
-            if (response.ok && data.success) {
-                // Nájdeme položku v košíku a aktualizujeme jej množstvo
-                const item = cartItems.find(
-                    (item) => item.product.id === productId && item.size === size
-                );
-                if (item) {
-                    item.quantity += quantityChange; // Aktualizujeme množstvo lokálne
-                    cartItems = [...cartItems]; // Trigger reactivity pre zobrazenie
-                }
-
-                // Aktualizujeme celkovú cenu
-                updateTotalPrice();
-            } else {
-                console.error('Failed to update cart:', data.message);
-                alert(data.message || 'Failed to update cart.');
+        if (response.ok && data.success) {
+            const item = cartItems.find(
+                (item) => item.product.id === productId && item.size === size
+            );
+            if (item) {
+                item.quantity += quantityChange;
+                cartItems = [...cartItems];
             }
-        } catch (error) {
-            console.error('Error updating cart:', error);
-            alert('Unexpected error while updating cart.');
+            updateTotalPrice();
         }
+
     }
 
 
@@ -89,46 +72,36 @@
     }
 
     async function removeFromCart(cartItemId: string) {
-        try {
-            const response = await fetch('/api/cart', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cartItemId }),
-            });
+        const response = await fetch('/api/cart', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cartItemId }),
+        });
 
-            if (!response.ok) {
-                new Error('Failed to remove item from cart.');
-            }
-
-            cartItems = cartItems.filter((item) => item.id !== cartItemId);
-        } catch (error: any) {
-            console.error('Error removing item from cart:', error.message);
-            alert('Failed to remove item from cart.');
+        if (!response.ok) {
+            new Error('Failed to remove item from cart.');
         }
+        cartItems = cartItems.filter((item) => item.id !== cartItemId);
     }
 
     async function placeOrder() {
         placingOrder = true;
-        try {
-            const response = await fetch('/api/order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cartItems }),
-            });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                new Error(errorData.message || 'Failed to place order.');
-            }
+        const response = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cartItems }),
+        });
 
-            alert('Order placed successfully!');
-            cartItems = [];
-        } catch (error: any) {
-            console.error('Error placing order:', error.message);
-            alert('Failed to place order. Please try again.');
-        } finally {
-            placingOrder = false;
+        if (!response.ok) {
+            const errorData = await response.json();
+            new Error(errorData.message || 'Failed to place order.');
         }
+
+        alert('Order placed successfully!');
+        cartItems = [];
+
+        placingOrder = false;
     }
 
     onMount(() => {

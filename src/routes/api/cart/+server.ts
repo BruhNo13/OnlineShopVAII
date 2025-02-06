@@ -5,7 +5,7 @@ export async function GET({ locals }: { locals: App.Locals }) {
     const user = locals.user;
 
     if (!user) {
-        console.warn('User is not logged in.');
+        // console.error('User is not logged in.');
         return json({ success: false, message: 'User not logged in.' });
     }
 
@@ -43,7 +43,7 @@ export async function GET({ locals }: { locals: App.Locals }) {
     const cartItemsWithProducts = cartItems.map((item) => {
         const product = productsWithImages.find((product) => product.id === item.product_id);
         const price = product ? product.price : 0;
-        console.log(`Cart Item ID: ${item.id}, Linked Product ID: ${product?.id}, Price: ${price}`);
+        // console.log(`Cart Item ID: ${item.id}, Linked Product ID: ${product?.id}, Price: ${price}`);
         return {
             ...item,
             product,
@@ -52,9 +52,7 @@ export async function GET({ locals }: { locals: App.Locals }) {
     });
 
     return json({ success: true, cartItems: cartItemsWithProducts });
-
 }
-
 
 export async function POST({ request, locals }) {
     const user = locals.user;
