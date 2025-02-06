@@ -38,6 +38,7 @@
     let errors: { [key: string]: string } = {};
     let dragOver = false;
     let uploadingImage = false;
+    let file: File | null = null;
 
     function addSizeField() {
         product.sizes = [...product.sizes, { size: 0, quantity: 0 }];
@@ -63,8 +64,6 @@
 
     async function handleImageUpload(event: DragEvent | Event) {
         uploadingImage = true;
-
-        let file: File | null = null;
 
         if (event instanceof DragEvent && event.dataTransfer?.files) {
             file = event.dataTransfer.files[0];

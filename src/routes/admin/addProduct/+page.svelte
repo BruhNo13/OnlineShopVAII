@@ -8,7 +8,7 @@
             .regex(/^[a-zA-Z\s-]+$/, "Name can only contain letters, spaces, and hyphens."),
         price: z.number()
             .min(0, "Price must be a positive number or zero."),
-        image: z.instanceof(File, { message: 'Image file is required' }),
+        image: z.string().min(1, "Image file is required"),
         type: z.enum(["tshirt", "hoodie", "jacket", "coat", "pants", "shoes"]),
         sizes: z.array(
             z.object({
@@ -37,7 +37,6 @@
     };
 
     let file: File | null = null;
-
 
     let errors: Record<string, string> = {};
 
