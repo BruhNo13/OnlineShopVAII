@@ -1,5 +1,27 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
+import { z } from 'zod';
+
+const sizeSchema = z.object({
+    size: z.number().min(1, "Size must be greater than 0."),
+    quantity: z.number().min(0, "Quantity must be 0 or greater.")
+});
+
+const productSchema = z.object({
+    name: z.string()
+        .min(1, "Name is required.")
+        .regex(/^[a-zA-Z\s-]+$/, "Name can only contain letters, spaces, and hyphens."),
+    price: z.number().min(0, "Price must be a positive number or zero."),
+    image: z.string().min(1, "Image is required."),
+    type: z.enum(["tshirt", "hoodie", "jacket", "coat", "pants", "shoes"]),
+    sizes: z.array(sizeSchema).nonempty("At least one size must be specified."),
+    color: z.enum(["red", "blue", "green", "white", "black"]),
+    brand: z.enum(["adidas", "nike", "puma"]),
+    sale: z.number()
+        .min(0, "Sale must be at least 0.")
+        .max(100, "Sale cannot exceed 100."),
+    gender: z.enum(["male", "female", "other"]),
+});
 
 export async function GET() {
     const { data: products } = await supabase
@@ -10,57 +32,20 @@ export async function GET() {
 }
 
 export async function POST({ request }) {
-    type Size = {
-        size: number;
-        quantity: number;
-    };
+    const body = await request.json();
 
-    type Product = {
-        name: string;
-        price: number;
-        image: string;
-        type: string;
-        sizes: Size[];
-        color: string;
-        brand: string;
-        sale: number;
-        gender: string;
-    };
+    const validation = productSchema.safeParse(body);
 
-    const product: Product = await request.json();
-
-    if (!/^[a-zA-Z\s-]+$/.test(product.name)) {
+    if (!validation.success) {
+        const errors = validation.error.errors.map(err => err.message).join(', ');
         return json(
-            { success: false, message: 'Invalid name: Only letters, spaces, and hyphens are allowed.' },
-            { status: 400 }
+            { success: false, message: errors },
         );
     }
 
-    if (product.price < 0 || isNaN(product.price)) {
-        return json(
-            { success: false, message: 'Invalid price: Must be a positive number or zero.' },
-            { status: 400 }
-        );
-    }
+    const product = validation.data;
 
-    if (product.sale < 0 || product.sale > 100 || isNaN(product.sale)) {
-        return json(
-            { success: false, message: 'Invalid sale: Must be a number between 0 and 100.' },
-            { status: 400 }
-        );
-    }
-
-    if (!Array.isArray(product.sizes) || product.sizes.some((size) => size.size <= 0 || size.quantity < 0)) {
-        return json(
-            {
-                success: false,
-                message: 'Invalid sizes: Each size must have a positive size and a non-negative quantity.'
-            },
-            { status: 400 }
-        );
-    }
-
-    const { data: productData, error: productError } = await supabase
+    const { data: productData} = await supabase
         .from('Products')
         .insert({
             name: product.name,
@@ -75,14 +60,6 @@ export async function POST({ request }) {
         .select()
         .single();
 
-    if (productError || !productData) {
-        console.error('Error inserting product:', productError?.message);
-        return json(
-            { success: false, message: 'Failed to add product. Please try again later.' },
-            { status: 500 }
-        );
-    }
-
     const productId = productData.id;
 
     const sizeInsertData = product.sizes.map(({ size, quantity }) => ({
@@ -91,25 +68,19 @@ export async function POST({ request }) {
         quantity
     }));
 
-    const { error: sizeError } = await supabase
+    await supabase
         .from('Product_Sizes')
         .insert(sizeInsertData);
-
-    if (sizeError) {
-        console.error('Error inserting product sizes:', sizeError.message);
-        return json(
-            { success: false, message: 'Failed to add product sizes. Please try again later.' },
-            { status: 500 }
-        );
-    }
 
     return json({ success: true, message: 'Product added successfully.' });
 }
 
-
 export async function DELETE({ request }) {
-
     const { id } = await request.json();
+
+    if (!id) {
+        return json({ success: false, message: "Product ID is required for deletion." }, { status: 400 });
+    }
 
     console.log('Received ID for deletion:', id);
 
@@ -125,5 +96,3 @@ export async function DELETE({ request }) {
 
     return json({ success: true, message: 'Product and its sizes deleted successfully.' });
 }
-
-

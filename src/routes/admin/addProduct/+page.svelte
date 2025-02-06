@@ -1,5 +1,28 @@
 <script lang="ts">
+    import { z } from 'zod';
     import { goto } from "$app/navigation";
+
+    const productSchema = z.object({
+        name: z.string()
+            .min(1, "Name is required")
+            .regex(/^[a-zA-Z\s-]+$/, "Name can only contain letters, spaces, and hyphens."),
+        price: z.number()
+            .min(0, "Price must be a positive number or zero."),
+        // image: z.instanceof(File, { message: 'Image file is required' }),
+        type: z.enum(["tshirt", "hoodie", "jacket", "coat", "pants", "shoes"]),
+        sizes: z.array(
+            z.object({
+                size: z.number().min(1, "Size must be greater than 0."),
+                quantity: z.number().min(0, "Quantity must be 0 or greater.")
+            })
+        ).nonempty("At least one size must be specified."),
+        color: z.enum(["red", "blue", "green", "white", "black"]),
+        brand: z.enum(["adidas", "nike", "puma"]),
+        sale: z.number()
+            .min(0, "Sale must be at least 0.")
+            .max(100, "Sale cannot exceed 100."),
+        gender: z.enum(["male", "female", "other"]),
+    });
 
     let product = {
         name: "",
@@ -13,11 +36,7 @@
         gender: "male",
     };
 
-    let errors = {
-        name: "",
-        price: "",
-        sale: "",
-    };
+    let errors: Record<string, string> = {};
 
     let dragOver = false;
     let uploadingImage = false;
@@ -30,38 +49,10 @@
         product.sizes = product.sizes.filter((_, i) => i !== index);
     }
 
-    function validateForm(): boolean {
-        let isValid = true;
-
-        if (!/^[a-zA-Z\s-]+$/.test(product.name)) {
-            errors.name = "Name can only contain letters, spaces, and hyphens.";
-            isValid = false;
-        } else {
-            errors.name = "";
-        }
-
-        if (product.price < 0 || isNaN(product.price)) {
-            errors.price = "Price must be a positive number or zero.";
-            isValid = false;
-        } else {
-            errors.price = "";
-        }
-
-        if (product.sale < 0 || product.sale > 100 || isNaN(product.sale)) {
-            errors.sale = "Sale must be a number between 0 and 100.";
-            isValid = false;
-        } else {
-            errors.sale = "";
-        }
-
-        return isValid;
-    }
-
     async function addProduct() {
-        if (!validateForm()) {
-            alert("Please fix the errors before submitting.");
-            return;
-        }
+        validateFormLocally();
+
+        productSchema.parse(product);
 
         const response = await fetch("/api/products", {
             method: "POST",
@@ -83,6 +74,7 @@
 
     }
 
+
     async function handleImageUpload(event: Event | DragEvent) {
         uploadingImage = true;
 
@@ -100,31 +92,43 @@
             return;
         }
 
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/products/images', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            // alert('Failed to upload image: ' + result.message);
+            return;
+        }
+
+        product.image = result.filePath;
+        console.log("Uploaded image:", file);
+        // alert(result.message);
+
+        uploadingImage = false;
+
+    }
+
+    function validateFormLocally() {
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await fetch('/api/products/images', {
-                method: 'POST',
-                body: formData,
-            });
-
-            const result = await response.json();
-
-            if (!result.success) {
-                alert('Failed to upload image: ' + result.message);
-                return;
+            productSchema.parse(product);
+            errors = {};
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                errors = {};
+                error.errors.forEach(err => {
+                    errors[err.path[0]] = err.message;
+                });
             }
-
-            product.image = result.filePath;
-            alert(result.message);
-        } catch (err) {
-            console.error('Unexpected error uploading image:', err);
-            alert('An unexpected error occurred. Please try again.');
-        } finally {
-            uploadingImage = false;
         }
     }
+
 </script>
 
 <main class="add-product-page">
@@ -133,11 +137,11 @@
 
         <label for="name">Name:</label>
         <input type="text" id="name" bind:value={product.name} placeholder="Enter product name" required />
-
+        <p class="error">{errors.name}</p>
 
         <label for="price">Price:</label>
         <input type="number" id="price" bind:value={product.price} placeholder="Enter price" min="0" required />
-
+        <p class="error">{errors.price}</p>
 
         <label for="image">Image:</label>
         <div
@@ -156,6 +160,7 @@
                     on:change={handleImageUpload}
             />
         </div>
+        <p class="error">{errors.image}</p>
 
         <label for="type">Type:</label>
         <select id="type" bind:value={product.type} required>
@@ -166,7 +171,7 @@
             <option value="pants">Pants</option>
             <option value="shoes">Shoes</option>
         </select>
-
+        <p class="error">{errors.type}</p>
 
         <label for="color">Color:</label>
         <select id="color" bind:value={product.color} required>
@@ -176,7 +181,7 @@
             <option value="white">White</option>
             <option value="black">Black</option>
         </select>
-
+        <p class="error">{errors.color}</p>
 
         <label for="brand">Brand:</label>
         <select id="brand" bind:value={product.brand} required>
@@ -184,11 +189,11 @@
             <option value="nike">Nike</option>
             <option value="puma">Puma</option>
         </select>
-
+        <p class="error">{errors.brand}</p>
 
         <label for="sale">Sale (%):</label>
         <input type="number" id="sale" bind:value={product.sale} placeholder="Enter sale percentage" min="0" max="100" required />
-
+        <p class="error">{errors.sale}</p>
 
         <label for="gender">Gender:</label>
         <select id="gender" bind:value={product.gender} required>
@@ -196,6 +201,7 @@
             <option value="female">Female</option>
             <option value="other">Other</option>
         </select>
+        <p class="error">{errors.gender}</p>
 
         Sizes:
         <div class="sizes-container">
@@ -232,13 +238,19 @@
             {/each}
             <button type="button" class="add-size-button" on:click={addSizeField}>Add Size</button>
         </div>
-
+        <p class="error">{errors.sizes}</p>
 
         <button type="submit" class="submit-button">Add Product</button>
     </form>
 </main>
 
 <style>
+    .error {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 0.2rem;
+    }
+
     .add-product-page {
         max-width: 800px;
         margin: 2rem auto;
