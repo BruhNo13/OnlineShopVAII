@@ -17,3 +17,14 @@ declare global {
 }
 
 export {};
+// export interface ProductData {
+// 	id: string;
+// 	name: string;
+// 	price: number;
+// 	image: string;
+// 	type: string;
+// 	gender?: string;
+// 	color?: string;
+// 	brand?: string;
+// 	sale?: number;
+// }
