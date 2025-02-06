@@ -1,16 +1,48 @@
 <script lang="ts">
     import { page } from '$app/stores';
+    import { z } from "zod";
 
     export let ProductData = $page.data;
 
     const product = ProductData.product;
-    const reviews = product.reviews || [];
+    const user = ProductData.user;
+
+    let reviews = product.reviews || [];
 
     let selectedSize: number | null = null;
     let quantity = 1;
     let newReview: { rating: number; comment: string } = { rating: 0, comment: '' };
 
     let isSubmitting = false;
+    let reviewErrors: { [key: string]: string } = {};
+    let isFormValid = false;
+
+    const reviewSchema = z.object({
+        rating: z
+            .number()
+            .min(0, "Rating must be at least 0.")
+            .max(5, "Rating cannot exceed 5."),
+        comment: z
+            .string()
+            .min(1, "Comment cannot be empty.")
+            .max(200, "Comment cannot exceed 200 characters."),
+    });
+
+    const validateReviewForm = () => {
+        try {
+            reviewSchema.parse(newReview);
+            reviewErrors = {};
+            isFormValid = true;
+        } catch (err) {
+            if (err instanceof z.ZodError) {
+                reviewErrors = {};
+                err.errors.forEach((e) => {
+                    if (e.path[0]) reviewErrors[e.path[0]] = e.message;
+                });
+                isFormValid = false;
+            }
+        }
+    };
 
     async function addToCart() {
         if (!selectedSize) {
@@ -37,7 +69,6 @@
     }
 
     async function addToFavorites() {
-
         const response = await fetch('/api/favorites', {
             method: 'POST',
             headers: {
@@ -51,15 +82,15 @@
         } else {
             alert('Failed to add product to favorites.');
         }
-
     }
 
     async function addReview() {
-        if (newReview.rating < 0 || newReview.rating > 5) {
-            alert('Please provide a valid rating (0-5) and comment.');
+        validateReviewForm();
+
+        if (!isFormValid) {
+            alert("Please correct the errors before submitting.");
             return;
         }
-
         isSubmitting = true;
 
         const response = await fetch(`/api/products/${product.id}/reviews`, {
@@ -69,16 +100,24 @@
         });
 
         if (!response.ok) {
-            throw new Error('Failed to add review.');
+            alert("Failed to add review.");
+            isSubmitting = false;
+            return;
         }
 
         const createdReview = await response.json();
-        reviews.unshift(createdReview);
+        reviews = [
+            {
+                ...createdReview,
+                user_name: `${ProductData.user.name} ${ProductData.user.surname}`,
+            },
+            ...reviews,
+        ];
+
         newReview = { rating: 0, comment: '' };
-
         isSubmitting = false;
-
     }
+
 </script>
 
 <svelte:head>
@@ -130,12 +169,24 @@
             <form on:submit|preventDefault={addReview}>
                 <label>
                     Rating:
-                    <input type="number" min="0" max="5" step="1" bind:value={newReview.rating} />
+                    <input
+                            type="number"
+                            min="0" max="5"
+                            step="1"
+                            bind:value={newReview.rating}
+                            on:blur={validateReviewForm}
+                    />
                 </label>
+                <p class="error-message">{reviewErrors.rating}</p>
                 <label>
                     Comment:
-                    <textarea bind:value={newReview.comment} rows="3"></textarea>
+                    <textarea
+                            bind:value={newReview.comment}
+                            rows="3"
+                            on:blur={validateReviewForm}
+                    ></textarea>
                 </label>
+                <p class="error-message">{reviewErrors.comment}</p>
                 <button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? 'Submitting...' : 'Submit'}
                 </button>
@@ -143,7 +194,10 @@
         </div>
 
         <div class="reviews-list">
-            {#each reviews as review}
+            {#if reviews.length === 0}
+                <p>No reviews yet. Be the first to review this product!</p>
+            {/if}
+            {#each reviews as review (review.id)}
                 <div class="review-card">
                     <p>
                         <strong>{review.user_name || 'Anonymous'}</strong> -
@@ -155,6 +209,7 @@
             {/each}
         </div>
     </div>
+
 </div>
 
 <style>

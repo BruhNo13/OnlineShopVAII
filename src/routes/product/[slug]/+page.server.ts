@@ -1,7 +1,7 @@
 import { supabase } from '$lib/supabase';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
     const { slug } = params;
 
     const { data: product } = await supabase
@@ -32,8 +32,8 @@ export const load: PageServerLoad = async ({ params }) => {
         .order('created_at', { ascending: false });
 
     if (reviewsError) {
-        console.error('chyba pri nacitani recenziíi:', reviewsError.message);
-        throw new Error('nepodarilo sa nacitat recenzie.');
+        console.error('Chyba pri načítaní recenzií:', reviewsError.message);
+        throw new Error('Nepodarilo sa načítať recenzie.');
     }
 
     const userIds = reviews.map((review) => review.user_id);
@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ params }) => {
         throw new Error('Nepodarilo sa načítať údaje používateľov.');
     }
 
-    const reviewsWithUsers = reviews.map((review) => {
+    product.reviews = reviews.map((review) => {
         const user = users.find((u) => u.id === review.user_id);
         return {
             ...review,
@@ -55,7 +55,15 @@ export const load: PageServerLoad = async ({ params }) => {
         };
     });
 
-    product.reviews = reviewsWithUsers;
+    let currentUser = null;
+    if (locals.user) {
+        const { data: fullUser} = await supabase
+            .from('users')
+            .select('id, name, surname')
+            .eq('id', locals.user.id)
+            .single();
+        currentUser = fullUser;
+    }
 
-    return { product };
+    return { product, user: currentUser };
 };
