@@ -1,125 +1,70 @@
 <script lang="ts">
+    import { z } from "zod";
 
     let email = '';
     let password = '';
     let name = '';
     let surname = '';
     let gender = '';
-    let role = '';
     let showPassword = false;
     let message = '';
-    let isFormValid = false;
+    let errors: Record<string, string> = {};
+    let isFormValid = true;
 
-    let emailError = '';
-    let passwordError = '';
-    let nameError = '';
-    let surnameError = '';
-    let genderError = '';
+    const signupSchema = z.object({
+        email: z.string().email("Enter a valid email address!"),
+        password: z
+            .string()
+            .min(8, "Password must have at least 8 characters.")
+            .regex(/[A-Z]/, "Password must include at least one uppercase letter.")
+            .regex(/\d/, "Password must include at least one number.")
+            .regex(/[@$!%*?&]/, "Password must include at least one special character."),
+        name: z
+            .string()
+            .min(2, "Name must have at least 2 characters.")
+            .regex(/^[A-Za-zÀ-ž\s-]+$/, "Name must contain only letters, spaces, and dashes."),
+        surname: z
+            .string()
+            .min(2, "Surname must have at least 2 characters.")
+            .regex(/^[A-Za-zÀ-ž\s-]+$/, "Surname must contain only letters, spaces, and dashes."),
+        gender: z.enum(["male", "female", "other"]),
+    });
 
-    let emailTouched = false;
-    let passwordTouched = false;
-    let nameTouched = false;
-    let surnameTouched = false;
-    let genderTouched = false;
+    const validateForm = () => {
+        try {
+            signupSchema.parse({ email, password, name, surname, gender });
+            errors = {};
+            isFormValid = true;
+        } catch (err) {
+            if (err instanceof z.ZodError) {
+                errors = {};
+                err.errors.forEach((e) => {
+                    if (e.path[0]) errors[e.path[0]] = e.message;
+                });
+                isFormValid = false;
+            }
+        }
+    };
 
     function togglePasswordVisibility() {
         showPassword = !showPassword;
     }
 
-    function validateEmail(email: string): boolean {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            emailError = 'Enter a valid email address!';
-            return false;
-        }
-        emailError = '';
-        return true;
-    }
-
-    function validatePassword(password: string): boolean {
-        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        if (!passwordRegex.test(password)) {
-            passwordError = 'Password must have at least 8 characters, one uppercase letter, one number, and one special character.';
-            return false;
-        }
-        passwordError = '';
-        return true;
-    }
-
-    function validateName(name: string): boolean {
-        const nameRegex = /^[A-Za-zÀ-ž\s-]{2,}$/;
-        if (!nameRegex.test(name)) {
-            nameError = 'Name must have at least 2 characters and contain only letters, spaces, and dashes.';
-            return false;
-        }
-        nameError = '';
-        return true;
-    }
-
-    function validateSurname(surname: string): boolean {
-        const surnameRegex = /^[A-Za-zÀ-ž\s-]{2,}$/;
-        if (!surnameRegex.test(surname)) {
-            surnameError = 'Surname must have at least 2 characters and contain only letters, spaces, and dashes.';
-            return false;
-        }
-        surnameError = '';
-        return true;
-    }
-
-    function validateGender(gender: string): boolean {
-        if (!['male', 'female', 'other'].includes(gender)) {
-            genderError = 'Select a gender!';
-            return false;
-        }
-        genderError = '';
-        return true;
-    }
-
-    function validateForm(): boolean {
-        return (
-            validateEmail(email) &&
-            validatePassword(password) &&
-            validateName(name) &&
-            validateSurname(surname) &&
-            validateGender(gender)
-        );
-    }
-
-    function handleBlur(field: 'email' | 'password' | 'name' | 'surname' | 'gender') {
-        if (field === 'email') {
-            emailTouched = true;
-            validateEmail(email);
-        } else if (field === 'password') {
-            passwordTouched = true;
-            validatePassword(password);
-        } else if (field === 'name') {
-            nameTouched = true;
-            validateName(name);
-        } else if (field === 'surname') {
-            surnameTouched = true;
-            validateSurname(surname);
-        } else if (field === 'gender') {
-            genderTouched = true;
-            validateGender(gender);
-        }
-
-        isFormValid = validateForm();
-    }
-
     async function signup() {
+        validateForm();
+
+        if (!isFormValid) {
+            message = "Please fix the errors before submitting.";
+            return;
+        }
 
         const response = await fetch('/api/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, name }),
+            body: JSON.stringify({ email, password, name, surname, gender }),
         });
 
-        if (!response.ok) {
-            new Error(`Sign up error.`);
-        }
-
         const result = await response.json();
-        console.log('Signup result:', result);
 
         if (!result.success) {
             message = result.message;
@@ -127,82 +72,64 @@
         }
 
         window.location.href = '/';
-
     }
-
 </script>
 
-
-<div class="signup-container">
+<main class="signup-container">
     <header class="signup-header">
         <h1>FAKESHEIN</h1>
     </header>
 
     <form on:submit|preventDefault={signup} class="signup-form">
-        <!-- Name -->
-        <div class="form-group {nameError ? 'error' : ''}">
+        <div class="form-group {errors.name ? 'error' : ''}">
             <label for="name">Name</label>
             <input
                     type="text"
                     id="name"
                     placeholder="Enter your name"
                     bind:value={name}
-                    on:blur={() => handleBlur('name')}
-                    required
             />
-            {#if nameTouched && nameError}
-                <p class="error-message">{nameError}</p>
-            {/if}
+            <p class="error-message">{errors.name}</p>
+
         </div>
 
-        <!-- Surname -->
-        <div class="form-group {surnameError ? 'error' : ''}">
+        <div class="form-group {errors.surname ? 'error' : ''}">
             <label for="surname">Surname</label>
             <input
                     type="text"
                     id="surname"
                     placeholder="Enter your surname"
                     bind:value={surname}
-                    on:blur={() => handleBlur('surname')}
-                    required
             />
-            {#if surnameTouched && surnameError}
-                <p class="error-message">{surnameError}</p>
-            {/if}
+            <p class="error-message">{errors.surname}</p>
+
         </div>
 
-        <!-- Gender -->
-        <div class="form-group {genderError ? 'error' : ''}">
+        <div class="form-group {errors.gender ? 'error' : ''}">
             <label for="gender">Gender</label>
-            <select id="gender" bind:value={gender} on:blur={() => handleBlur('gender')} required>
-                <option value="" disabled selected>Select your gender</option>
+            <select id="gender" bind:value={gender}>
+                <option value="" disabled>Select your gender</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
                 <option value="other">Other</option>
             </select>
-            {#if genderTouched && genderError}
-                <p class="error-message">{genderError}</p>
-            {/if}
+            <p class="error-message">{errors.gender}</p>
+
         </div>
 
-        <!-- Email -->
-        <div class="form-group {emailError ? 'error' : ''}">
+        <div class="form-group {errors.email ? 'error' : ''}">
             <label for="email">E-mail</label>
             <input
                     type="email"
                     id="email"
                     placeholder="Enter your email"
                     bind:value={email}
-                    on:blur={() => handleBlur('email')}
-                    required
             />
-            {#if emailTouched && emailError}
-                <p class="error-message">{emailError}</p>
-            {/if}
+            <p class="error-message">{errors.email}</p>
+
         </div>
 
-        <!-- Password -->
-        <div class="form-group password-group {passwordError ? 'error' : ''}">
+        <div class="form-group {errors.password ? 'error' : ''}">
             <label for="password">Password</label>
             <div class="password-container">
                 <input
@@ -210,8 +137,6 @@
                         id="password"
                         placeholder="Enter your password"
                         bind:value={password}
-                        on:blur={() => handleBlur('password')}
-                        required
                 />
                 <button
                         type="button"
@@ -221,19 +146,18 @@
                     {showPassword ? '🙈' : '👁️'}
                 </button>
             </div>
-            {#if passwordTouched && passwordError}
-                <p class="error-message">{passwordError}</p>
-            {/if}
+            <p class="error-message">{errors.password}</p>
+
         </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="signup-button" disabled={!isFormValid}>Register</button>
+        <button type="submit" class="signup-button">Register</button>
     </form>
 
     <footer class="signup-footer">
         <p>Already have an account? <a href="/login">Log in</a></p>
     </footer>
-</div>
+</main>
+
 
 <p>{message}</p>
 
@@ -280,10 +204,6 @@
         font-size: 1rem;
         border: 1px solid #ccc;
         border-radius: 5px;
-    }
-
-    .password-group {
-        position: relative;
     }
 
     .password-container {
