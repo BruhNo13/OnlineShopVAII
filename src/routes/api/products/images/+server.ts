@@ -1,7 +1,20 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
 
-export async function POST({ request }) {
+export async function POST({ request, locals }) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin', 'manager'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
 
     const formData = await request.formData();
     const file = formData.get('file') as File;

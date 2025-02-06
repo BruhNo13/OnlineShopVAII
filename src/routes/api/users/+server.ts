@@ -2,6 +2,19 @@ import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
 
 export async function GET({ locals }) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
 
     if (!locals.user) {
         return json({ success: false, message: 'User not authenticated' });
@@ -16,7 +29,20 @@ export async function GET({ locals }) {
 
 }
 
-export async function POST({ request }) {
+export async function POST({ request, locals }) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
 
     const { userId, role } = await request.json();
 

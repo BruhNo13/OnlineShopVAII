@@ -2,18 +2,31 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import {supabase} from "$lib/supabase";
 
-export const GET: RequestHandler = async ({}) => {
-
-    const {data: { user }, error: userError} = await supabase.auth.getUser();
-
-    if (userError || !user) {
-        return json({ message: 'Not authenticated' });
+export const GET: RequestHandler = async ({locals}) => {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
     }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin', 'manager'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
+
+    // const {data: { user }, error: userError} = await supabase.auth.getUser();
+    //
+    // if (userError || !user) {
+    //     return json({ message: 'Not authenticated' });
+    // }
 
     const { data: orders, error: ordersError } = await supabase
         .from('Orders')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', locals.user.id);
 
     if (ordersError) {
         throw new Error(ordersError.message);
@@ -63,7 +76,20 @@ export const GET: RequestHandler = async ({}) => {
 
 };
 
-export const DELETE: RequestHandler = async ({ request }) => {
+export const DELETE: RequestHandler = async ({ request, locals }) => {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
 
     const { orderId } = await request.json();
 

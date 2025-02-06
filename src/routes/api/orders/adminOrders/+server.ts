@@ -1,7 +1,20 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
 
-export async function GET() {
+export async function GET({locals}) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin', 'manager'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
 
     const { data: orders } = await supabase
         .from('Orders')
@@ -48,7 +61,20 @@ export async function GET() {
     return json({ success: true, orders: ordersWithDetails });
 }
 
-export async function POST({ request }) {
+export async function POST({ request, locals }) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin', 'manager'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
 
     const { orderId, status } = await request.json();
 

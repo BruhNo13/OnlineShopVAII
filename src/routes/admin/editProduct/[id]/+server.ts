@@ -24,7 +24,21 @@ const productSchema = z.object({
     gender: z.enum(["male", "female", "other"]),
 });
 
-export async function GET({ params }) {
+export async function GET({ params, locals }) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin', 'manager'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
+
     const { id } = params;
 
     if (!id) {
@@ -48,7 +62,21 @@ export async function GET({ params }) {
 
 }
 
-export async function POST({ request, params }: { request: Request; params: { id: string } }) {
+export async function POST({ request, params, locals }: { request: Request; params: { id: string }; locals: any }) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin', 'manager'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
+
     const { id } = params;
 
     if (!id) {

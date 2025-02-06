@@ -31,7 +31,21 @@ export async function GET() {
     return json({ success: true, products });
 }
 
-export async function POST({ request }) {
+export async function POST({ request, locals }) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin', 'manager'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
+
     const body = await request.json();
 
     const validation = productSchema.safeParse(body);
@@ -75,7 +89,20 @@ export async function POST({ request }) {
     return json({ success: true, message: 'Product added successfully.' });
 }
 
-export async function DELETE({ request }) {
+export async function DELETE({ request, locals }) {
+    if (!locals.user) {
+        return json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', locals.user.id)
+        .single();
+
+    if (error || !userData || !['admin', 'manager'].includes(userData.role)) {
+        return json({ success: false, message: 'Forbidden' });
+    }
     const { id } = await request.json();
 
     if (!id) {

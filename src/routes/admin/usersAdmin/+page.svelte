@@ -1,5 +1,13 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { page } from '$app/stores';
+    import {goto} from "$app/navigation";
+
+    let user = $page.data.user;
+
+    if (!user || !['admin', 'manager'].includes(user.role)) {
+        goto('/');
+    }
 
     interface User {
         id: string;

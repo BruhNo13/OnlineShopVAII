@@ -56,6 +56,10 @@ export const POST = async ({ request, params, locals }) => {
     const { id: productId } = params;
     const { user } = locals;
 
+    if (!user) {
+        return json({ success: false, message: 'Not authenticated' });
+    }
+
     const body = await request.json();
 
     const validationResult = reviewSchema.safeParse(body);
@@ -66,10 +70,6 @@ export const POST = async ({ request, params, locals }) => {
         );
     }
     const { rating, comment } = validationResult.data;
-
-    if (!user) {
-        return json({ success: false, message: 'Not authenticated' });
-    }
 
     const { data } = await supabase
         .from('Reviews')
