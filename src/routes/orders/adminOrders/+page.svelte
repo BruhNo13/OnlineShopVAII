@@ -96,7 +96,11 @@
                         <td>
                             <select
                                     bind:value={order.status}
-                                    on:change={(e) => updateOrderStatus(order.id, e.target.value)}
+                                    on:change={(e) => {
+                                        if (e.target instanceof HTMLSelectElement) {
+                                            updateOrderStatus(order.id, e.target.value)}
+                                        }
+                                    }
                             >
                                 <option value="pending">Pending</option>
                                 <option value="completed">Completed</option>
@@ -150,5 +154,33 @@
 
     select:focus {
         outline: 2px solid #007bff;
+    }
+
+    /* Responzivita */
+    @media (max-width: 768px) {
+        .admin-orders-page {
+            padding: 0.5rem;
+        }
+
+        table {
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .orders-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        th, td {
+            font-size: 0.8rem;
+            padding: 0.4rem;
+        }
     }
 </style>

@@ -208,5 +208,42 @@
     .side-button.users:hover {
         background-color: #2e3e9e;
     }
+
+    @media (max-width: 768px) {
+        .admin-page {
+            padding: 0.5rem;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        .admin-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .admin-side-buttons {
+            position: static;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            margin-top: 1rem;
+            gap: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .products-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .side-button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            width: auto;
+        }
+    }
+
 </style>
 

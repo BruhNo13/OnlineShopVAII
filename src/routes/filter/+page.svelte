@@ -256,4 +256,22 @@
         grid-template-columns: repeat(4, 1fr);
         gap: 2rem;
     }
+
+    @media (max-width: 768px) {
+        .filter-page {
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+    }
+
+    @media (max-width: 480px) {
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+    }
 </style>

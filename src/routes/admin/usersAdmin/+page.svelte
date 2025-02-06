@@ -5,10 +5,6 @@
 
     let user = $page.data.user;
 
-    if (!user || !['admin', 'manager'].includes(user.role)) {
-        goto('/');
-    }
-
     interface User {
         id: string;
         name: string | null;
@@ -59,6 +55,9 @@
     }
 
     onMount(() => {
+        if (!user || ['admin', 'manager'].includes(user.role)) {
+            goto('/');
+        }
         fetchUsers();
     });
 </script>
@@ -121,6 +120,7 @@
         max-width: 1000px;
         margin: 2rem auto;
         font-family: Arial, sans-serif;
+        padding: 1rem;
     }
 
     h1 {
@@ -165,5 +165,33 @@
     span {
         color: gray;
         font-size: 0.9rem;
+    }
+
+    /* Responzivita */
+    @media (max-width: 768px) {
+        main {
+            padding: 0.5rem;
+        }
+
+        .users-table table {
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .users-table table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        th, td {
+            font-size: 0.8rem;
+            padding: 0.4rem;
+        }
     }
 </style>

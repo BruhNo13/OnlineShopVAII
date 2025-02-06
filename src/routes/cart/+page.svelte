@@ -302,4 +302,26 @@
         background-color: #45a049;
     }
 
+    /* Responzivita */
+    @media (max-width: 768px) {
+        main {
+            padding: 1rem;
+        }
+
+        .cart-item-row {
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .cart-item-row {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .quantity-controls {
+            justify-content: center;
+        }
+    }
 </style>
