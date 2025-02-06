@@ -2,7 +2,7 @@ import type { Handle } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
 
 export const handle: Handle = async ({ event, resolve }) => {
-    const session = event.cookies.get('sb:token');
+    const session = event.cookies.get('sb_token');
 
     if (session) {
         const { data: user, error } = await supabase.auth.getUser(session);

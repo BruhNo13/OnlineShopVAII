@@ -9,7 +9,7 @@ export const POST = async ({ cookies }) => {
         return json({ error: 'Failed to log out' });
     }
 
-    cookies.delete('sb:token', {
+    cookies.delete('sb_token', {
         path: '/',
     });
 

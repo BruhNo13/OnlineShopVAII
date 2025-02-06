@@ -30,7 +30,7 @@ export async function POST({ request, cookies }) {
     if (error || !data.session) {
         return json({ success: false, message: 'Invalid email or password.' });
     }
-    cookies.set('sb:token', data.session.access_token, {
+    cookies.set('sb_token', data.session.access_token, {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
